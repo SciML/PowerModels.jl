@@ -21,7 +21,6 @@ PTI `.raw` files in the PSS(R)E v33 specification can be run similarly, e.g. in 
 solve_ac_opf("case3.raw", Ipopt.Optimizer)
 ```
 
-
 ## Getting Results
 
 The run commands in PowerModels return detailed results data in the form of a dictionary. Results dictionaries from either Matpower `.m` or PTI `.raw` files will be identical in format. This dictionary can be saved for further processing as follows,
@@ -46,7 +45,6 @@ Dict(name => data["va"] for (name, data) in result["solution"]["bus"])
 
 The `print_summary(result["solution"])` function can be used show an table-like overview of the solution data.  For more information about PowerModels result data see the [PowerModels Result Data Format](@ref) section.
 
-
 ## Accessing Different Formulations
 
 The function `solve_ac_opf` and `solve_dc_opf` are shorthands for a more general formulation-independent OPF execution, `solve_opf`.
@@ -63,7 +61,6 @@ solve_opf("matpower/case3.m", SOCWRPowerModel, Ipopt.Optimizer)
 ```
 
 [Formulation Details](@ref) provides a list of available formulations.
-
 
 ## Modifying Network Data
 
@@ -83,15 +80,15 @@ solve_opf(network_data, ACPPowerModel, Ipopt.Optimizer)
 Network data parsed from PTI `.raw` files supports data extensions, i.e. data fields that are within the PSS(R)E specification, but not used by PowerModels for calculation. This can be achieved by
 
 ```julia
-network_data = PowerModels.parse_file("pti/case3.raw"; import_all=true)
+network_data = PowerModels.parse_file("pti/case3.raw"; import_all = true)
 ```
 
 This network data can be modified in the same way as the previous Matpower `.m` file example. For additional details about the network data, see the [PowerModels Network Data Format](@ref) section.
 
-
 ## Inspecting AC and DC branch flow results
 
 The flow AC and DC branch results are written to the result by default. The following can be used to inspect the flow results:
+
 ```julia
 result = solve_opf("matpower/case3_dc.m", ACPPowerModel, Ipopt.Optimizer)
 result["solution"]["dcline"]["1"]
@@ -99,13 +96,16 @@ result["solution"]["branch"]["2"]
 ```
 
 The losses of an AC or DC branch can be derived:
+
 ```julia
-loss_ac =  Dict(name => data["pt"]+data["pf"] for (name, data) in result["solution"]["branch"])
-loss_dc =  Dict(name => data["pt"]+data["pf"] for (name, data) in result["solution"]["dcline"])
+loss_ac = Dict(name => data["pt"]+data["pf"]
+for (name, data) in result["solution"]["branch"])
+loss_dc = Dict(name => data["pt"]+data["pf"]
+for (name, data) in result["solution"]["dcline"])
 ```
 
-
 ## Building PowerModels from Network Data Dictionaries
+
 The following example demonstrates how to break a `solve_opf` call into separate model building and solving steps.  This allows inspection of the JuMP model created by PowerModels for the AC-OPF problem,
 
 ```julia
@@ -113,7 +113,7 @@ pm = instantiate_model("matpower/case3.m", ACPPowerModel, PowerModels.build_opf)
 
 print(pm.model)
 
-result = optimize_model!(pm, optimizer=Ipopt.Optimizer)
+result = optimize_model!(pm, optimizer = Ipopt.Optimizer)
 ```
 
 Alternatively, you can further break it up by parsing a file into a network data dictionary, before passing it on to `instantiate_model()` like so,
@@ -125,5 +125,5 @@ pm = instantiate_model(network_data, ACPPowerModel, PowerModels.build_opf)
 
 print(pm.model)
 
-result = optimize_model!(pm, optimizer=Ipopt.Optimizer)
+result = optimize_model!(pm, optimizer = Ipopt.Optimizer)
 ```

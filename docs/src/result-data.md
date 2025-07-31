@@ -63,4 +63,3 @@ update a data dictionary with the values from a solution as follows,
 ```
 PowerModels.update_data!(data, result["solution"])
 ```
-

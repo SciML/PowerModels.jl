@@ -19,38 +19,47 @@
 
 ##### Top Level Abstract Types #####
 
-"active power only models"
+"""
+active power only models
+"""
 abstract type AbstractActivePowerModel <: AbstractPowerModel end
 
-"variants that target conic solvers"
+"""
+variants that target conic solvers
+"""
 abstract type AbstractConicModel <: AbstractPowerModel end
 
-"for branch flow models"
+"""
+for branch flow models
+"""
 abstract type AbstractBFModel <: AbstractPowerModel end
 
-
-"for variants of branch flow models that target LP solvers"
+"""
+for variants of branch flow models that target LP solvers
+"""
 abstract type AbstractBFAModel <: AbstractBFModel end
 
-"for variants of branch flow models that target QP or NLP solvers"
+"""
+for variants of branch flow models that target QP or NLP solvers
+"""
 abstract type AbstractBFQPModel <: AbstractBFModel end
 
-"for variants of branch flow models that target conic solvers"
+"""
+for variants of branch flow models that target conic solvers
+"""
 abstract type AbstractBFConicModel <: AbstractBFModel end
-
-
-
-
 
 ##### Exact Non-Convex Models #####
 
-""
+"""
+"""
 abstract type AbstractACPModel <: AbstractPowerModel end
 
 """
 AC power flow Model with polar bus voltage variables.
 
 The seminal reference of AC OPF:
+
 ```
 @article{carpentier1962contribution,
   title={Contribution to the economic dispatch problem},
@@ -64,6 +73,7 @@ The seminal reference of AC OPF:
 ```
 
 History and discussion:
+
 ```
 @techreport{Cain2012,
   author = {Cain, Mary B and {O' Neill}, Richard P and Castillo, Anya},
@@ -74,11 +84,13 @@ History and discussion:
 }
 ```
 """
-mutable struct ACPPowerModel <: AbstractACPModel @pm_fields end
+mutable struct ACPPowerModel <: AbstractACPModel
+    @pm_fields
+end
 
-""
+"""
+"""
 abstract type AbstractACRModel <: AbstractPowerModel end
-
 
 """
 AC power flow Model with rectangular bus voltage variables.
@@ -93,14 +105,17 @@ AC power flow Model with rectangular bus voltage variables.
 }
 ```
 """
-mutable struct ACRPowerModel <: AbstractACRModel @pm_fields end
+mutable struct ACRPowerModel <: AbstractACRModel
+    @pm_fields
+end
 
-
-""
+"""
+"""
 abstract type AbstractACTModel <: AbstractPowerModel end
 
 """
 AC power flow Model (nonconvex) with variables for voltage angle, voltage magnitude squared, and real and imaginary part of voltage crossproducts. A tangens constraint is added to represent meshed networks in an exact manner.
+
 ```
 @ARTICLE{4349090,
   author={R. A. Jabr},
@@ -116,12 +131,12 @@ AC power flow Model (nonconvex) with variables for voltage angle, voltage magnit
 }
 ```
 """
-mutable struct ACTPowerModel <: AbstractACTModel @pm_fields end
+mutable struct ACTPowerModel <: AbstractACTModel
+    @pm_fields
+end
 
-
-
-
-""
+"""
+"""
 abstract type AbstractIVRModel <: AbstractACRModel end
 
 """
@@ -141,15 +156,13 @@ due to constants power loads/generators and apparent power limits.
 
 Applicable to problem formulations with `_iv` in the name.
 """
-mutable struct IVRPowerModel <: AbstractIVRModel @pm_fields end
-
+mutable struct IVRPowerModel <: AbstractIVRModel
+    @pm_fields
+end
 
 ##### Linear Approximations #####
 
-
-
 abstract type AbstractDCPModel <: AbstractActivePowerModel end
-
 
 """
 Linearized 'DC' power flow Model with polar voltage variables.
@@ -177,8 +190,9 @@ in solutions should be expected when comparing active-power-only approximations 
 }
 ```
 """
-mutable struct DCPPowerModel <: AbstractDCPModel @pm_fields end
-
+mutable struct DCPPowerModel <: AbstractDCPModel
+    @pm_fields
+end
 
 abstract type AbstractDCMPPModel <: AbstractDCPModel end
 
@@ -187,36 +201,38 @@ Linearized 'DC' power flow model with polar voltage variables.
 
 Similar to the DCPPowerModel with the following changes:
 
-- It uses branch susceptance values `br_b = -1 / br_x` for determining the network phase angles.
-- Transformer parameters such as tap ratios and phase shifts are considered.
+  - It uses branch susceptance values `br_b = -1 / br_x` for determining the network phase angles.
+  - Transformer parameters such as tap ratios and phase shifts are considered.
 
 The results should be equal to the results of matpower calculations.
 """
-mutable struct DCMPPowerModel <: AbstractDCMPPModel @pm_fields end
-
+mutable struct DCMPPowerModel <: AbstractDCMPPModel
+    @pm_fields
+end
 
 abstract type AbstractNFAModel <: AbstractDCPModel end
 
 """
 The an active power only network flow approximation, also known as the transportation model.
 """
-mutable struct NFAPowerModel <: AbstractNFAModel @pm_fields end
-
-
-
-
+mutable struct NFAPowerModel <: AbstractNFAModel
+    @pm_fields
+end
 
 ##### Quadratic Approximations #####
 
-
-""
+"""
+"""
 abstract type AbstractDCPLLModel <: AbstractDCPModel end
 
-""
-mutable struct DCPLLPowerModel <: AbstractDCPLLModel @pm_fields end
+"""
+"""
+mutable struct DCPLLPowerModel <: AbstractDCPLLModel
+    @pm_fields
+end
 
-
-""
+"""
+"""
 abstract type AbstractLPACModel <: AbstractPowerModel end
 
 abstract type AbstractLPACCModel <: AbstractLPACModel end
@@ -248,26 +264,29 @@ constraints.
 }
 ```
 """
-mutable struct LPACCPowerModel <: AbstractLPACCModel @pm_fields end
-
-
-
+mutable struct LPACCPowerModel <: AbstractLPACCModel
+    @pm_fields
+end
 
 ##### Quadratic Relaxations #####
 
-""
+"""
+"""
 abstract type AbstractWRModel <: AbstractPowerModel end
 
-""
+"""
+"""
 abstract type AbstractWRConicModel <: AbstractConicModel end
 
-""
+"""
+"""
 abstract type AbstractSOCWRModel <: AbstractWRModel end
 
 """
 Second-order cone relaxation of bus injection model of AC OPF.
 
 The implementation casts this as a convex quadratically constrained problem.
+
 ```
 @article{1664986,
   author={R. A. Jabr},
@@ -283,10 +302,12 @@ The implementation casts this as a convex quadratically constrained problem.
 }
 ```
 """
-mutable struct SOCWRPowerModel <: AbstractSOCWRModel @pm_fields end
+mutable struct SOCWRPowerModel <: AbstractSOCWRModel
+    @pm_fields
+end
 
-
-""
+"""
+"""
 abstract type AbstractSOCWRConicModel <: AbstractWRConicModel end
 
 """
@@ -294,11 +315,12 @@ Second-order cone relaxation of bus injection model of AC OPF.
 
 This implementation casts the problem as a convex conic problem.
 """
-mutable struct SOCWRConicPowerModel <: AbstractSOCWRConicModel @pm_fields end
+mutable struct SOCWRConicPowerModel <: AbstractSOCWRConicModel
+    @pm_fields
+end
 
-
-
-""
+"""
+"""
 abstract type AbstractQCWRModel <: AbstractWRModel end
 
 abstract type AbstractQCRMPowerModel <: AbstractQCWRModel end
@@ -306,6 +328,7 @@ abstract type AbstractQCRMPowerModel <: AbstractQCWRModel end
 """
 The "Quadratic-Convex" relaxation of the AC power flow equations.
 Recursive McCormik relaxations are used for the trilinear terms (i.e. QCRM).
+
 ```
 @Article{Hijazi2017,
   author="Hijazi, Hassan and Coffrin, Carleton and Hentenryck, Pascal Van",
@@ -322,16 +345,19 @@ Recursive McCormik relaxations are used for the trilinear terms (i.e. QCRM).
 }
 ```
 """
-mutable struct QCRMPowerModel <: AbstractQCRMPowerModel @pm_fields end
+mutable struct QCRMPowerModel <: AbstractQCRMPowerModel
+    @pm_fields
+end
 
-
-""
+"""
+"""
 abstract type AbstractQCLSModel <: AbstractQCWRModel end
 
 """
 A strengthened version of the "Quadratic-Convex" relaxation of the AC power flow equations.
 An extreme-point encoding of trilinar terms is used along with a constraint to link the
 lambda variables in multiple trilinar terms (i.e. QCLS).
+
 ```
 @misc{1809.04565,
   author="Kaarthik Sundar and Harsha Nagarajan and Sidhant Misra and Mowen Lu and Carleton Coffrin and Russell Bent",
@@ -342,6 +368,7 @@ lambda variables in multiple trilinar terms (i.e. QCLS).
 ```
 
 The original model derivation is available in,
+
 ```
 @Article{Hijazi2017,
   author="Hijazi, Hassan and Coffrin, Carleton and Hentenryck, Pascal Van",
@@ -358,17 +385,19 @@ The original model derivation is available in,
 }
 ```
 """
-mutable struct QCLSPowerModel <: AbstractQCLSModel @pm_fields end
+mutable struct QCLSPowerModel <: AbstractQCLSModel
+    @pm_fields
+end
 
-
-
-""
+"""
+"""
 abstract type AbstractSOCBFModel <: AbstractBFQPModel end
 
 """
 Second-order cone relaxation of branch flow model
 
 The implementation casts this as a convex quadratically constrained problem.
+
 ```
 @INPROCEEDINGS{6425870,
   author={M. Farivar and S. H. Low},
@@ -381,7 +410,9 @@ The implementation casts this as a convex quadratically constrained problem.
   ISSN={0191-2216}
 }
 ```
+
 Extended as discussed in:
+
 ```
 @misc{1506.04773,
   author = {Carleton Coffrin and Hassan L. Hijazi and Pascal Van Hentenryck},
@@ -394,7 +425,9 @@ Extended as discussed in:
 
 Applicable to problem formulations with `_bf` in the name.
 """
-mutable struct SOCBFPowerModel <: AbstractSOCBFModel @pm_fields end
+mutable struct SOCBFPowerModel <: AbstractSOCBFModel
+    @pm_fields
+end
 
 """
 Linear approximation of branch flow model.
@@ -403,6 +436,7 @@ The implementation builds on the second-order cone relaxation of the branch
 flow model, but neglects the active and reactive loss terms associated with
 the squared current magnitude so the power flow equations become linear.
 Note that flow bounds are still second order cones.
+
 ```
 @article{Baran1989OptimalSystems,
     title = {{Optimal capacitor placement on radial distribution systems}},
@@ -419,32 +453,35 @@ Note that flow bounds are still second order cones.
 
 Applicable to problem formulations with `_bf` in the name.
 """
-mutable struct BFAPowerModel <: AbstractBFAModel @pm_fields end
+mutable struct BFAPowerModel <: AbstractBFAModel
+    @pm_fields
+end
 
-""
+"""
+"""
 abstract type AbstractSOCBFConicModel <: AbstractBFConicModel end
 
-""
-mutable struct SOCBFConicPowerModel <: AbstractSOCBFConicModel @pm_fields end
-
-
-
-
-
+"""
+"""
+mutable struct SOCBFConicPowerModel <: AbstractSOCBFConicModel
+    @pm_fields
+end
 
 ###### SDP Relaxations ######
 
-""
+"""
+"""
 abstract type AbstractWRMModel <: AbstractConicModel end
 
-
-""
+"""
+"""
 abstract type AbstractSDPWRMModel <: AbstractWRMModel end
 
 """
 Semi-definite relaxation of AC OPF
 
 Originally proposed by:
+
 ```
 @article{BAI2008383,
   author = "Xiaoqing Bai and Hua Wei and Katsuki Fujisawa and Yong Wang",
@@ -459,7 +496,9 @@ Originally proposed by:
   url = "http://www.sciencedirect.com/science/article/pii/S0142061507001378",
 }
 ```
+
 First paper to use "W" variables in the BIM of AC OPF:
+
 ```
 @INPROCEEDINGS{6345272,
   author={S. Sojoudi and J. Lavaei},
@@ -473,8 +512,9 @@ First paper to use "W" variables in the BIM of AC OPF:
 }
 ```
 """
-mutable struct SDPWRMPowerModel <: AbstractSDPWRMModel @pm_fields end
-
+mutable struct SDPWRMPowerModel <: AbstractSDPWRMModel
+    @pm_fields
+end
 
 abstract type AbstractSparseSDPWRMModel <: AbstractSDPWRMModel end
 
@@ -482,6 +522,7 @@ abstract type AbstractSparseSDPWRMModel <: AbstractSDPWRMModel end
 Sparsity-exploiting semidefinite relaxation of AC OPF
 
 Proposed in:
+
 ```
 @article{doi:10.1137/S1052623400366218,
   author = {Fukuda, M. and Kojima, M. and Murota, K. and Nakata, K.},
@@ -496,7 +537,9 @@ Proposed in:
   eprint = {https://doi.org/10.1137/S1052623400366218}
 }
 ```
+
 Original application to OPF by:
+
 ```
 @ARTICLE{6064917,
   author={R. A. Jabr},
@@ -512,9 +555,9 @@ Original application to OPF by:
 }
 ```
 """
-mutable struct SparseSDPWRMPowerModel <: AbstractSparseSDPWRMModel @pm_fields end
-
-
+mutable struct SparseSDPWRMPowerModel <: AbstractSparseSDPWRMModel
+    @pm_fields
+end
 
 ##### Union Types #####
 #
@@ -529,13 +572,18 @@ mutable struct SparseSDPWRMPowerModel <: AbstractSparseSDPWRMModel @pm_fields en
 # type hierarchy can resolve the issue instead.
 #
 
-AbstractWRModels = Union{AbstractACTModel, AbstractWRModel, AbstractWRConicModel, AbstractWRMModel}
+AbstractWRModels = Union{
+    AbstractACTModel, AbstractWRModel, AbstractWRConicModel, AbstractWRMModel}
 AbstractWModels = Union{AbstractWRModels, AbstractBFModel}
-AbstractWConvexModels = Union{AbstractWRModel, AbstractWRConicModel, AbstractWRMModel, AbstractBFModel}
+AbstractWConvexModels = Union{
+    AbstractWRModel, AbstractWRConicModel, AbstractWRMModel, AbstractBFModel}
 
 AbstractAPLossLessModels = Union{DCPPowerModel, DCMPPowerModel, AbstractNFAModel}
 
-AbstractPolarModels = Union{AbstractACPModel, AbstractACTModel, AbstractLPACModel, AbstractDCPModel}
+AbstractPolarModels = Union{
+    AbstractACPModel, AbstractACTModel, AbstractLPACModel, AbstractDCPModel}
 
-"union of all conic Model branches"
+"""
+union of all conic Model branches
+"""
 AbstractConicModels = Union{AbstractConicModel, AbstractBFConicModel}

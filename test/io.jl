@@ -1,6 +1,5 @@
 
 @testset "export data to other file types" begin
-
     function test_export(filename::AbstractString, extension::AbstractString)
         source_data = parse_file(filename)
 
@@ -19,7 +18,7 @@
         test_export(file, "json")
     end
 
-        @testset "test case5.m" begin
+    @testset "test case5.m" begin
         file = "../test/data/matpower/case5.m"
         test_export(file, "raw")
         test_export(file, "json")

@@ -4,18 +4,18 @@ TESTLOG = Memento.getlogger(PowerModels)
 
 function set_costs!(data::Dict)
     for (n, gen) in data["gen"]
-        gen["cost"] = [0., 100., 0.]
+        gen["cost"] = [0.0, 100.0, 0.0]
         gen["ncost"] = 3
-        gen["startup"] = 0.
-        gen["shutdown"] = 0.
+        gen["startup"] = 0.0
+        gen["shutdown"] = 0.0
         gen["model"] = 2
     end
 
     for (n, dcline) in data["dcline"]
-        dcline["cost"] = [0., 0., 0.]
+        dcline["cost"] = [0.0, 0.0, 0.0]
         dcline["ncost"] = 3
-        dcline["startup"] = 0.
-        dcline["shutdown"] = 0.
+        dcline["startup"] = 0.0
+        dcline["shutdown"] = 0.0
         dcline["model"] = 2
     end
 end
@@ -29,7 +29,7 @@ end
             set_costs!(data_mp)
 
             result_pti = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-            result_mp  = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
+            result_mp = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pti["termination_status"] == LOCALLY_SOLVED
             @test result_mp["termination_status"] == LOCALLY_SOLVED
@@ -43,7 +43,7 @@ end
             set_costs!(data_mp)
 
             result_pti = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-            result_mp  = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
+            result_mp = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pti["termination_status"] == LOCALLY_SOLVED
             @test result_mp["termination_status"] == LOCALLY_SOLVED
@@ -59,7 +59,7 @@ end
                 set_costs!(data_mp)
 
                 result_pti = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-                result_mp  = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
+                result_mp = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
 
                 @test result_pti["termination_status"] == LOCALLY_SOLVED
                 @test result_mp["termination_status"] == LOCALLY_SOLVED
@@ -72,28 +72,28 @@ end
 
             for (k, v) in data_pti["branch"]
                 if v["transformer"]
-                    @test isapprox(v["br_r"], 0.; atol=1e-2)
-                    @test isapprox(v["br_x"], 0.179; atol=1e-2)
-                    @test isapprox(v["tap"], 1.019; atol=1e-2)
-                    @test isapprox(v["shift"], 0.; atol=1e-2)
-                    @test isapprox(v["rate_a"], 0.84; atol=1e-2)
-                    @test isapprox(v["rate_b"], 0.84; atol=1e-2)
-                    @test isapprox(v["rate_c"], 0.84; atol=1e-2)
+                    @test isapprox(v["br_r"], 0.0; atol = 1e-2)
+                    @test isapprox(v["br_x"], 0.179; atol = 1e-2)
+                    @test isapprox(v["tap"], 1.019; atol = 1e-2)
+                    @test isapprox(v["shift"], 0.0; atol = 1e-2)
+                    @test isapprox(v["rate_a"], 0.84; atol = 1e-2)
+                    @test isapprox(v["rate_b"], 0.84; atol = 1e-2)
+                    @test isapprox(v["rate_c"], 0.84; atol = 1e-2)
                 end
             end
 
             result_opf = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_opf["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result_opf["objective"], 29.4043; atol=1e-4)
+            @test isapprox(result_opf["objective"], 29.4043; atol = 1e-4)
 
             result_pf = PowerModels.run_pf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
             for (bus, vm, va) in zip(["1002", "1005", "1008", "1009"],
-                                     [1.0032721, 1.0199983, 1.0203627, 1.03],
-                                     [2.946182, 0.129922, -0.002062, 0.])
-                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol=1e-1)
-                @test isapprox(result_pf["solution"]["bus"][bus]["va"], deg2rad(va); atol=1e-2)
+                [1.0032721, 1.0199983, 1.0203627, 1.03],
+                [2.946182, 0.129922, -0.002062, 0.0])
+                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol = 1e-1)
+                @test isapprox(result_pf["solution"]["bus"][bus]["va"], deg2rad(va); atol = 1e-2)
             end
         end
     end
@@ -106,13 +106,13 @@ end
             set_costs!(data_mp)
 
             result_pti = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-            result_mp  = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
+            result_mp = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pti["termination_status"] == LOCALLY_SOLVED
             @test result_mp["termination_status"] == LOCALLY_SOLVED
 
             # TODO: Needs approximation of DCLINES
-            @test isapprox(result_pti["objective"], result_mp["objective"]; atol=10)
+            @test isapprox(result_pti["objective"], result_mp["objective"]; atol = 10)
         end
     end
 
@@ -124,19 +124,19 @@ end
             set_costs!(data_mp)
 
             result_pti = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-            result_mp  = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
+            result_mp = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pti["termination_status"] == LOCALLY_SOLVED
             @test result_mp["termination_status"] == LOCALLY_SOLVED
 
-            @test isapprox(result_pti["objective"], result_mp["objective"]; atol=1e-5)
+            @test isapprox(result_pti["objective"], result_mp["objective"]; atol = 1e-5)
         end
     end
 
     @testset "7-bus topology case file" begin
         @testset "AC Model" begin
             data_pti = PowerModels.parse_file("../test/data/pti/case7_tplgy.raw")
-            data_mp  = PowerModels.parse_file("../test/data/matpower/case7_tplgy.m")
+            data_mp = PowerModels.parse_file("../test/data/matpower/case7_tplgy.m")
 
             PowerModels.simplify_network!(data_pti)
             PowerModels.simplify_network!(data_mp)
@@ -144,13 +144,13 @@ end
             set_costs!(data_mp)
 
             result_pti = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-            result_mp  = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
+            result_mp = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pti["termination_status"] == LOCALLY_SOLVED
             @test result_mp["termination_status"] == LOCALLY_SOLVED
 
             # TODO: Needs approximation of DCLINES
-            @test isapprox(result_mp["objective"], result_pti["objective"]; atol=20)
+            @test isapprox(result_mp["objective"], result_pti["objective"]; atol = 20)
         end
     end
 
@@ -162,12 +162,12 @@ end
             set_costs!(data_mp)
 
             result_pti = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-            result_mp  = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
+            result_mp = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pti["termination_status"] == LOCALLY_SOLVED
             @test result_mp["termination_status"] == LOCALLY_SOLVED
 
-            @test isapprox(result_pti["objective"], result_mp["objective"]; atol=1e-2)
+            @test isapprox(result_pti["objective"], result_mp["objective"]; atol = 1e-2)
         end
     end
 
@@ -179,13 +179,13 @@ end
             set_costs!(data_mp)
 
             result_pti = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-            result_mp  = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
+            result_mp = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pti["termination_status"] == LOCALLY_SOLVED
             @test result_mp["termination_status"] == LOCALLY_SOLVED
 
             # NOTE: ANGMIN and ANGMAX do not exist in PSS(R)E Spec, accounting for the objective differences
-            @test isapprox(result_pti["objective"], result_mp["objective"]; atol=0.6914)
+            @test isapprox(result_pti["objective"], result_mp["objective"]; atol = 0.6914)
         end
     end
 
@@ -197,12 +197,12 @@ end
             set_costs!(data_mp)
 
             result_pti = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
-            result_mp  = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
+            result_mp = PowerModels.run_opf(data_mp, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pti["termination_status"] == LOCALLY_SOLVED
             @test result_mp["termination_status"] == LOCALLY_SOLVED
 
-            @test isapprox(result_pti["objective"], result_mp["objective"]; atol=1e-5)
+            @test isapprox(result_pti["objective"], result_mp["objective"]; atol = 1e-5)
         end
     end
 
@@ -214,10 +214,11 @@ end
         Memento.setlevel!(TESTLOG, "warn")
 
         @test_warn(TESTLOG, "Could not find bus 1, returning 0 for field vm",
-                   PowerModels._get_bus_value(1, "vm", dummy_data))
+            PowerModels._get_bus_value(1, "vm", dummy_data))
 
-        @test_warn(TESTLOG, "The following fields in BUS are missing: NVHI, NVLO, EVHI, EVLO",
-                   PowerModels.parse_file("../test/data/pti/parser_test_i.raw"))
+        @test_warn(TESTLOG,
+            "The following fields in BUS are missing: NVHI, NVLO, EVHI, EVLO",
+            PowerModels.parse_file("../test/data/pti/parser_test_i.raw"))
 
         Memento.setlevel!(TESTLOG, "error")
     end
@@ -238,13 +239,13 @@ end
             )
 
             for (branch, br_r, br_x, tap, shift, rate_a, rate_b, rate_c) in branch_data
-                @test isapprox(data_pti["branch"][branch]["br_r"], br_r; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["br_x"], br_x; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["tap"], tap; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["shift"], shift; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["rate_a"], rate_a; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["rate_b"], rate_b; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["rate_c"], rate_c; atol=1e-4)
+                @test isapprox(data_pti["branch"][branch]["br_r"], br_r; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["br_x"], br_x; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["tap"], tap; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["shift"], shift; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["rate_a"], rate_a; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["rate_b"], rate_b; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["rate_c"], rate_c; atol = 1e-4)
             end
 
             bus_data = zip(
@@ -253,7 +254,7 @@ end
             )
 
             for (bus, bus_type) in bus_data
-                @test isapprox(data_pti["bus"][bus]["bus_type"], bus_type; atol=1e-8)
+                @test isapprox(data_pti["bus"][bus]["bus_type"], bus_type; atol = 1e-8)
             end
 
             @test length(data_pti["bus"]) == 8
@@ -262,7 +263,7 @@ end
             result_opf = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_opf["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result_opf["objective"], 10.00027; atol=1e-5)
+            @test isapprox(result_opf["objective"], 10.00027; atol = 1e-5)
 
             result_pf = PowerModels.run_pf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
@@ -273,8 +274,8 @@ end
             )
 
             for (bus, vm, va) in bus_data
-                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol=1e-1)
-                @test isapprox(result_pf["solution"]["bus"][bus]["va"], va; atol=1e-2)
+                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol = 1e-1)
+                @test isapprox(result_pf["solution"]["bus"][bus]["va"], va; atol = 1e-2)
             end
         end
 
@@ -293,28 +294,28 @@ end
             )
 
             for (branch, br_r, br_x, tap, shift, rate_a, rate_b, rate_c) in branch_data
-                @test isapprox(data_pti["branch"][branch]["br_r"], br_r; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["br_x"], br_x; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["tap"], tap; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["shift"], shift; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["rate_a"], rate_a; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["rate_b"], rate_b; atol=1e-4)
-                @test isapprox(data_pti["branch"][branch]["rate_c"], rate_c; atol=1e-4)
+                @test isapprox(data_pti["branch"][branch]["br_r"], br_r; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["br_x"], br_x; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["tap"], tap; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["shift"], shift; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["rate_a"], rate_a; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["rate_b"], rate_b; atol = 1e-4)
+                @test isapprox(data_pti["branch"][branch]["rate_c"], rate_c; atol = 1e-4)
             end
-
 
             result_opf = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_opf["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result_opf["objective"], 10.0; atol=1e-5)
+            @test isapprox(result_opf["objective"], 10.0; atol = 1e-5)
 
             result_pf = PowerModels.run_pf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
-            for (bus, vm, va) in zip(["1001", "1002", "1003", "10001"], [1.09, 1.0, 1.0, 0.997], [2.304, 0., 6.042244, 2.5901])
-                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol=1e-1)
-                @test isapprox(result_pf["solution"]["bus"][bus]["va"], deg2rad(va); atol=1e-2)
+            for (bus, vm, va) in
+                zip(["1001", "1002", "1003", "10001"], [1.09, 1.0, 1.0, 0.997], [
+                2.304, 0.0, 6.042244, 2.5901])
+                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol = 1e-1)
+                @test isapprox(result_pf["solution"]["bus"][bus]["va"], deg2rad(va); atol = 1e-2)
             end
-
         end
     end
 
@@ -324,22 +325,22 @@ end
 
             @test length(data_pti["branch"]) == 1
 
-            @test isapprox(data_pti["branch"]["1"]["g_fr"], 5e-3; atol=1e-4)
-            @test isapprox(data_pti["branch"]["1"]["b_fr"], 6.74e-3; atol=1e-4)
+            @test isapprox(data_pti["branch"]["1"]["g_fr"], 5e-3; atol = 1e-4)
+            @test isapprox(data_pti["branch"]["1"]["b_fr"], 6.74e-3; atol = 1e-4)
 
             result_opf = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_opf["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result_opf["objective"], 701.637157; atol=1e-5)
+            @test isapprox(result_opf["objective"], 701.637157; atol = 1e-5)
 
             result_pf = PowerModels.run_pf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pf["termination_status"] == LOCALLY_SOLVED
             @test result_pf["objective"] == 0.0
 
-            for (bus, vm, va) in zip(["1", "2"], [1.0932940, 1.06414], [0.928781, 0.])
-                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol=1e-1)
-                @test isapprox(result_pf["solution"]["bus"][bus]["va"], deg2rad(va); atol=1e-2)
+            for (bus, vm, va) in zip(["1", "2"], [1.0932940, 1.06414], [0.928781, 0.0])
+                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol = 1e-1)
+                @test isapprox(result_pf["solution"]["bus"][bus]["va"], deg2rad(va); atol = 1e-2)
             end
         end
 
@@ -348,33 +349,34 @@ end
 
             @test length(data_pti["branch"]) == 3
 
-            @test isapprox(data_pti["branch"]["1"]["g_fr"], 5e-3; atol=1e-4)
-            @test isapprox(data_pti["branch"]["1"]["b_fr"], 6.74e-3; atol=1e-4)
+            @test isapprox(data_pti["branch"]["1"]["g_fr"], 5e-3; atol = 1e-4)
+            @test isapprox(data_pti["branch"]["1"]["b_fr"], 6.74e-3; atol = 1e-4)
 
             result_opf = PowerModels.run_opf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_opf["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result_opf["objective"], 10.4001; atol=1e-2)
+            @test isapprox(result_opf["objective"], 10.4001; atol = 1e-2)
 
             result_pf = PowerModels.run_pf(data_pti, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result_pf["termination_status"] == LOCALLY_SOLVED
             @test result_pf["objective"] == 0.0
 
-            for (bus, vm, va) in zip(["1001", "1002", "1003", "10001"], [1.0965262, 1.0, 0.9999540, 0.9978417], [2.234718, 0., 5.985760, 2.538179])
-                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol=1e-1)
-                @test isapprox(result_pf["solution"]["bus"][bus]["va"], deg2rad(va); atol=1e-2)
+            for (bus, vm, va) in zip(
+                ["1001", "1002", "1003", "10001"], [1.0965262, 1.0, 0.9999540, 0.9978417],
+                [2.234718, 0.0, 5.985760, 2.538179])
+                @test isapprox(result_pf["solution"]["bus"][bus]["vm"], vm; atol = 1e-1)
+                @test isapprox(result_pf["solution"]["bus"][bus]["va"], deg2rad(va); atol = 1e-2)
             end
         end
     end
-
 
     @testset "transformer status" begin
         @testset "two-winding transformers" begin
             data_pti = PowerModels.parse_file("../test/data/pti/case5.raw")
 
             br_off = Set(["8", "9"])
-            for (i,branch) in data_pti["branch"]
+            for (i, branch) in data_pti["branch"]
                 if i in br_off
                     @test branch["br_status"] == 0
                 else
@@ -387,7 +389,7 @@ end
             data_pti = PowerModels.parse_file("../test/data/pti/three_winding_test.raw")
 
             br_off = Set(["1", "2", "3", "8", "12", "13"])
-            for (i,branch) in data_pti["branch"]
+            for (i, branch) in data_pti["branch"]
                 if i in br_off
                     @test branch["br_status"] == 0
                 else
@@ -397,12 +399,12 @@ end
         end
     end
 
-
     @testset "import all" begin
         @testset "30-bus case" begin
-            data = PowerModels.parse_file("../test/data/pti/case30.raw"; import_all=true)
+            data = PowerModels.parse_file("../test/data/pti/case30.raw"; import_all = true)
 
-            for (key, n) in zip(["bus", "load", "shunt", "gen", "branch"], [15, 15, 28, 34, 29])
+            for (key, n) in
+                zip(["bus", "load", "shunt", "gen", "branch"], [15, 15, 28, 34, 29])
                 for item in values(data[key])
                     if key == "branch" && item["transformer"]
                         @test length(item) == 47
@@ -415,22 +417,23 @@ end
             result = PowerModels.run_opf(data, PowerModels.ACPPowerModel, nlp_solver)
 
             @test result["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(result["objective"], 297.878089; atol=1e-4)
+            @test isapprox(result["objective"], 297.878089; atol = 1e-4)
         end
 
         @testset "frankenstein 70" begin
-            data = PowerModels.parse_file("../test/data/pti/frankenstein_70.raw"; import_all=true)
+            data = PowerModels.parse_file("../test/data/pti/frankenstein_70.raw"; import_all = true)
 
-            extras = ["zone", "facts control device", "owner", "area interchange", "impedance correction", "multi-terminal dc"]
+            extras = ["zone", "facts control device", "owner", "area interchange",
+                "impedance correction", "multi-terminal dc"]
             for k in extras
                 @test k in keys(data)
             end
         end
 
         @testset "impedance correction keys" begin
-            data = PowerModels.parse_file("../test/data/pti/frankenstein_70.raw"; import_all=true)
+            data = PowerModels.parse_file("../test/data/pti/frankenstein_70.raw"; import_all = true)
 
-            for (i,icd) in data["impedance correction"]
+            for (i, icd) in data["impedance correction"]
                 for i in 1:11
                     t_key = "t$(i)"
                     f_key = "f$(i)"
@@ -442,7 +445,7 @@ end
         end
 
         @testset "arrays in VSC-HVDC" begin
-            data = PowerModels.parse_file("../test/data/pti/vsc-hvdc_test.raw"; import_all=true)
+            data = PowerModels.parse_file("../test/data/pti/vsc-hvdc_test.raw"; import_all = true)
 
             @test length(data["dcline"]["1"]) == 36
             for item in data["dcline"]["1"]["converter buses"]
@@ -453,9 +456,10 @@ end
         end
 
         @testset "three-winding case" begin
-            data = PowerModels.parse_file("../test/data/pti/three_winding_test.raw"; import_all=true)
+            data = PowerModels.parse_file("../test/data/pti/three_winding_test.raw"; import_all = true)
 
-            for (key, n) in zip(["bus", "load", "shunt", "gen", "branch"], [15, 15, 28, 34, 29])
+            for (key, n) in
+                zip(["bus", "load", "shunt", "gen", "branch"], [15, 15, 28, 34, 29])
                 for item in values(data[key])
                     if key == "branch" && item["transformer"]
                         # 47 = 2 winding, 69 = 3 winding - first winding, 22 = 3 winding - other windings
@@ -468,7 +472,6 @@ end
                     end
                 end
             end
-
         end
     end
 
@@ -481,7 +484,7 @@ end
 
             opf = PowerModels.run_opf(data, PowerModels.ACPPowerModel, nlp_solver)
             @test opf["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(opf["objective"], 10.5; atol=1e-3)
+            @test isapprox(opf["objective"], 10.5; atol = 1e-3)
 
             pf = PowerModels.run_pf(data, PowerModels.ACPPowerModel, nlp_solver)
             @test pf["termination_status"] == LOCALLY_SOLVED
@@ -495,7 +498,7 @@ end
 
             opf = PowerModels.run_opf(data, PowerModels.ACPPowerModel, nlp_solver)
             @test opf["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(opf["objective"], 21.8842; atol=1e-3)
+            @test isapprox(opf["objective"], 21.8842; atol = 1e-3)
 
             pf = PowerModels.run_pf(data, PowerModels.ACPPowerModel, nlp_solver)
             @test pf["termination_status"] == LOCALLY_SOLVED
@@ -509,7 +512,9 @@ end
             for v in values(data[key])
                 @test "source_id" in keys(v)
                 @test isa(v["source_id"], Array)
-                @test v["source_id"][1] in ["bus", "load", "fixed shunt", "switched shunt", "branch", "generator", "transformer", "two-terminal dc", "vsc dc"]
+                @test v["source_id"][1] in [
+                    "bus", "load", "fixed shunt", "switched shunt", "branch",
+                    "generator", "transformer", "two-terminal dc", "vsc dc"]
             end
         end
     end

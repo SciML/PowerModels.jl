@@ -1,15 +1,15 @@
 
 # used by OTS models
-function check_br_status(sol, active_lb::Real, active_ub::Real; tol=1e-6)
+function check_br_status(sol, active_lb::Real, active_ub::Real; tol = 1e-6)
     active = 0
-    for (i,branch) in sol["branch"]
-        @test isapprox(branch["br_status"], 0.0, atol=1e-6, rtol=1e-6) || isapprox(branch["br_status"], 1.0, atol=1e-6, rtol=1e-6)
+    for (i, branch) in sol["branch"]
+        @test isapprox(branch["br_status"], 0.0, atol = 1e-6, rtol = 1e-6) ||
+              isapprox(branch["br_status"], 1.0, atol = 1e-6, rtol = 1e-6)
         active += branch["br_status"]
     end
     @test active_lb - tol <= active
     @test active <= active_ub + tol
 end
-
 
 @testset "test ac ots" begin
     @testset "3-bus case" begin
@@ -64,7 +64,6 @@ end
     #end
 end
 
-
 @testset "test dc ots" begin
     @testset "3-bus case" begin
         result = run_ots("../test/data/matpower/case3.m", DCPPowerModel, minlp_solver)
@@ -108,7 +107,6 @@ end
     end
 end
 
-
 @testset "test dc+ll ots" begin
     @testset "3-bus case" begin
         result = run_ots("../test/data/matpower/case3.m", DCPLLPowerModel, minlp_solver)
@@ -143,7 +141,6 @@ end
         @test isapprox(result["objective"], 11574.3; atol = 1e0)
     end
 end
-
 
 @testset "test soc ots" begin
     @testset "3-bus case" begin
@@ -187,7 +184,6 @@ end
         @test isapprox(result["objective"], 11472.3; atol = 1e0)
     end
 end
-
 
 @testset "test qc ots" begin
     @testset "3-bus case" begin
@@ -240,7 +236,6 @@ end
         @test isapprox(result["objective"], 11472.3; atol = 1e0)
     end
 end
-
 
 @testset "test lpac ots" begin
     @testset "3-bus case" begin

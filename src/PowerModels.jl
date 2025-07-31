@@ -20,14 +20,19 @@ const _LOGGER = Memento.getlogger(@__MODULE__)
 # NOTE: If this line is not included then the precompiled `PowerModels._LOGGER` won't be registered at runtime.
 __init__() = Memento.register(_LOGGER)
 
-"Suppresses information and warning messages output by PowerModels, for fine grained control use the Memento package"
+"""
+Suppresses information and warning messages output by PowerModels, for fine grained control use the Memento package
+"""
 function silence()
-    Memento.info(_LOGGER, "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
+    Memento.info(_LOGGER,
+        "Suppressing information and warning messages for the rest of this session.  Use the Memento package for more fine-grained control of logging.")
     Memento.setlevel!(Memento.getlogger(InfrastructureModels), "error")
     Memento.setlevel!(Memento.getlogger(PowerModels), "error")
 end
 
-"alows the user to set the logging level without the need to add Memento"
+"""
+alows the user to set the logging level without the need to add Memento
+"""
 function logger_config!(level)
     Memento.config!(Memento.getlogger("PowerModels"), level)
 end
@@ -35,7 +40,6 @@ end
 const _pm_global_keys = Set(["time_series", "per_unit"])
 const pm_it_name = "pm"
 const pm_it_sym = Symbol(pm_it_name)
-
 
 include("io/matpower.jl")
 include("io/common.jl")
@@ -85,7 +89,6 @@ include("prob/test.jl")
 include("util/obbt.jl")
 include("util/flow_limit_cuts.jl")
 
-
 # function deprecation warnings
 # can be removed in a breaking release after 09/01/2022
 function run_model(args...; kwargs...)
@@ -113,7 +116,6 @@ function run_pf_iv(args...; kwargs...)
     @warn("the function run_pf_iv has been replaced with solve_pf_iv", maxlog=1)
     solve_pf_iv(args...; kwargs...)
 end
-
 
 function run_opf(args...; kwargs...)
     @warn("the function run_opf has been replaced with solve_opf", maxlog=1)
@@ -146,7 +148,8 @@ function run_opf_bf(args...; kwargs...)
     solve_opf_bf(args...; kwargs...)
 end
 function run_mn_opf_bf_strg(args...; kwargs...)
-    @warn("the function run_mn_opf_bf_strg has been replaced with solve_mn_opf_bf_strg", maxlog=1)
+    @warn("the function run_mn_opf_bf_strg has been replaced with solve_mn_opf_bf_strg",
+        maxlog=1)
     solve_mn_opf_bf_strg(args...; kwargs...)
 end
 function run_opf_iv(args...; kwargs...)
@@ -173,26 +176,29 @@ function run_tnep(args...; kwargs...)
 end
 
 function run_opf_branch_power_cuts(args...; kwargs...)
-    @warn("the function run_opf_branch_power_cuts has been replaced with solve_opf_branch_power_cuts", maxlog=1)
+    @warn("the function run_opf_branch_power_cuts has been replaced with solve_opf_branch_power_cuts",
+        maxlog=1)
     solve_opf_branch_power_cuts(args...; kwargs...)
 end
 function run_opf_branch_power_cuts!(args...; kwargs...)
-    @warn("the function run_opf_branch_power_cuts! has been replaced with solve_opf_branch_power_cuts!", maxlog=1)
+    @warn("the function run_opf_branch_power_cuts! has been replaced with solve_opf_branch_power_cuts!",
+        maxlog=1)
     solve_opf_branch_power_cuts!(args...; kwargs...)
 end
 function run_opf_ptdf_branch_power_cuts(args...; kwargs...)
-    @warn("the function run_opf_ptdf_branch_power_cuts has been replaced with solve_opf_ptdf_branch_power_cuts", maxlog=1)
+    @warn("the function run_opf_ptdf_branch_power_cuts has been replaced with solve_opf_ptdf_branch_power_cuts",
+        maxlog=1)
     solve_opf_ptdf_branch_power_cuts(args...; kwargs...)
 end
 function run_opf_ptdf_branch_power_cuts!(args...; kwargs...)
-    @warn("the function run_opf_ptdf_branch_power_cuts! has been replaced with solve_opf_ptdf_branch_power_cuts!", maxlog=1)
+    @warn("the function run_opf_ptdf_branch_power_cuts! has been replaced with solve_opf_ptdf_branch_power_cuts!",
+        maxlog=1)
     solve_opf_ptdf_branch_power_cuts!(args...; kwargs...)
 end
 function run_obbt_opf!(args...; kwargs...)
     @warn("the function run_obbt_opf! has been replaced with solve_obbt_opf!", maxlog=1)
     solve_obbt_opf!(args...; kwargs...)
 end
-
 
 # this must come last to support automated export
 include("core/export.jl")

@@ -20,17 +20,19 @@ make_basic_network
 ```
 
 The standard procedure for loading basic network data is as follows,
+
 ```julia
 data = make_basic_network(parse_file("<path to network data file>"))
 ```
+
 modifications to the original network data file are indicated by logging
 messages in the terminal.
 
 !!! tip
+    
     If `make_basic_network` results in significant changes to a dataset,
     `export_file` can be used to inspect and modify the new derivative dataset
     that conforms to the basic network requirements.
-
 
 ## Matrix-Based Data
 
@@ -54,11 +56,11 @@ calc_basic_ptdf_row
 ```
 
 !!! warning
+    
     Several variants of the real-valued susceptance matrix are possible.
     PowerModels uses the version based on inverse of branch series impedance,
     that is `imag(inv(r + x im))`. One may observe slightly different results
     when compared to tools that use other variants such as `1/x`.
-
 
 ## Matrix-Based Computations
 
@@ -70,10 +72,10 @@ impedance one can drive the susceptance and branch susceptance matrices as follo
 import LinearAlgebra: Diagonal
 
 bz = calc_basic_branch_series_impedance(data)
-A  = calc_basic_incidence_matrix(data)
+A = calc_basic_incidence_matrix(data)
 
-Y  = imag(Diagonal(inv.(bz)))
-B  = A'*Y*A    # equivalent to calc_basic_susceptance_matrix
+Y = imag(Diagonal(inv.(bz)))
+B = A'*Y*A    # equivalent to calc_basic_susceptance_matrix
 BB = (A'*Y)'   # equivalent to calc_basic_branch_susceptance_matrix
 ```
 
@@ -82,17 +84,17 @@ matrices to observe how power flows through the network as follows,
 
 ```julia
 va = angle.(calc_basic_bus_voltage(data))
-B  = calc_basic_susceptance_matrix(data)
+B = calc_basic_susceptance_matrix(data)
 BB = calc_basic_branch_susceptance_matrix(data)
 
-bus_injection =  -B * va
-branch_power  = -BB * va
+bus_injection = -B * va
+branch_power = -BB * va
 ```
 
 In the inverse operation, bus injection values can be combined with a PTDF matrix to compute branch flow values as follows,
 
 ```julia
-bi   = real(calc_basic_bus_injection(data))
+bi = real(calc_basic_bus_injection(data))
 PTDF = calc_basic_ptdf_matrix(data)
 
 branch_power = PTDF * bi
@@ -105,10 +107,9 @@ basic network data using Julia's native linear equation solver,
 compute_basic_dc_pf
 ```
 
-
 !!! tip
+    
     By default PowerModels uses Julia's SparseArrays to ensure the best
     performance of matrix operations on large power network datasets.
     The function `Matrix(sparse_array)` can be used to covert a sparse matrix
     into a full matrix when that is preferred.
-

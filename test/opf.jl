@@ -1,5 +1,4 @@
 
-
 @testset "test ac polar opf" begin
     @testset "3-bus case" begin
         result = run_ac_opf("../test/data/matpower/case3.m", nlp_solver)
@@ -89,7 +88,6 @@
     end
 end
 
-
 @testset "test ac rect opf" begin
     #=
     # numerical issue
@@ -145,7 +143,6 @@ end
     end
 end
 
-
 @testset "test ac tan opf" begin
     @testset "3-bus case" begin
         result = run_opf("../test/data/matpower/case3.m", ACTPowerModel, nlp_solver)
@@ -197,7 +194,6 @@ end
     end
 end
 
-
 @testset "test iv opf" begin
     @testset "3-bus case" begin
         result = run_opf_iv("../test/data/matpower/case3.m", IVRPowerModel, nlp_solver)
@@ -245,12 +241,10 @@ end
         @test isapprox(result["objective"], 79804; atol = 1e0)
     end
     @testset "14-bus variable bounds" begin
-       pm = instantiate_model("../test/data/matpower/case14.m", IVRPowerModel, PowerModels.build_opf_iv)
-       @test check_variable_bounds(pm.model)
-   end
+        pm = instantiate_model("../test/data/matpower/case14.m", IVRPowerModel, PowerModels.build_opf_iv)
+        @test check_variable_bounds(pm.model)
+    end
 end
-
-
 
 @testset "test dc opf" begin
     @testset "3-bus case" begin
@@ -322,21 +316,18 @@ end
     end
 end
 
-
 @testset "test matpower dc opf" begin
     @testset "5-bus case with matpower DCMP model" begin
         result = run_opf("../test/data/matpower/case5.m", DCMPPowerModel, nlp_solver)
 
         @test result["termination_status"] == LOCALLY_SOLVED
 
-        @test isapprox(result["solution"]["bus"]["1"]["va"],  0.0591772; atol = 1e-7)
-        @test isapprox(result["solution"]["bus"]["2"]["va"],  0.0017285; atol = 1e-7)
+        @test isapprox(result["solution"]["bus"]["1"]["va"], 0.0591772; atol = 1e-7)
+        @test isapprox(result["solution"]["bus"]["2"]["va"], 0.0017285; atol = 1e-7)
         @test isapprox(result["solution"]["bus"]["3"]["va"], 0.0120486; atol = 1e-7)
         @test isapprox(result["solution"]["bus"]["4"]["va"], 0.0; atol = 1e-7)
-
     end
 end
-
 
 @testset "test nfa opf" begin
     @testset "3-bus case" begin
@@ -438,7 +429,6 @@ end
     end
 end
 
-
 @testset "test lpac-c opf" begin
     @testset "3-bus case" begin
         result = run_opf("../test/data/matpower/case3.m", LPACCPowerModel, nlp_solver)
@@ -516,7 +506,6 @@ end
         @test check_variable_bounds(pm.model)
     end
 end
-
 
 @testset "test soc (BIM) opf" begin
     @testset "3-bus case" begin
@@ -600,10 +589,10 @@ end
         @test isapprox(result["objective"], 15051.4; atol = 1e1)
     end
     @testset "5-bus asymmetric case" begin
-       result = run_opf("../test/data/matpower/case5_asym.m", SOCWRConicPowerModel, sdp_solver)
+        result = run_opf("../test/data/matpower/case5_asym.m", SOCWRConicPowerModel, sdp_solver)
 
-       @test result["termination_status"] == OPTIMAL
-       @test isapprox(result["objective"], 14999.7; atol = 1e0)
+        @test result["termination_status"] == OPTIMAL
+        @test isapprox(result["objective"], 14999.7; atol = 1e0)
     end
     @testset "5-bus gap case" begin
         result = run_opf("../test/data/matpower/case5_gap.m", SOCWRConicPowerModel, sdp_solver)
@@ -618,11 +607,11 @@ end
         @test isapprox(result["objective"], 1005.27; atol = 1e0)
     end
     @testset "5-bus with negative generators" begin
-       result = run_opf("../test/data/matpower/case5_npg.m", SOCWRConicPowerModel, sdp_solver)
+        result = run_opf("../test/data/matpower/case5_npg.m", SOCWRConicPowerModel, sdp_solver)
 
-       @test result["termination_status"] == OPTIMAL
-       @test isapprox(result["objective"], 3551.71; atol = 40)
-       #@test isapprox(result["objective"], 3602.11; atol = 40)
+        @test result["termination_status"] == OPTIMAL
+        @test isapprox(result["objective"], 3551.71; atol = 40)
+        #@test isapprox(result["objective"], 3602.11; atol = 40)
     end
     @testset "5-bus with pwl costs" begin
         result = run_opf("../test/data/matpower/case5_pwlc.m", SOCWRConicPowerModel, sdp_solver)
@@ -900,7 +889,6 @@ end
     end
 end
 
-
 @testset "test sdp opf" begin
     @testset "3-bus case" begin
         result = run_opf("../test/data/matpower/case3.m", SDPWRMPowerModel, sdp_solver)
@@ -909,8 +897,8 @@ end
         @test isapprox(result["objective"], 5818.00; atol = 1e1)
         #@test isapprox(result["objective"], 5852.51; atol = 1e1)
 
-        @test haskey(result["solution"],"WR")
-        @test haskey(result["solution"],"WI")
+        @test haskey(result["solution"], "WR")
+        @test haskey(result["solution"], "WI")
         @test isapprox(result["solution"]["bus"]["1"]["w"], 1.179, atol = 1e-2)
         @test isapprox(result["solution"]["branch"]["1"]["wr"], 0.941, atol = 1e-2)
         @test isapprox(result["solution"]["branch"]["1"]["wi"], 0.269, atol = 1e-2)
@@ -928,10 +916,10 @@ end
         @test isapprox(result["objective"], -28236.1; atol = 1e1)
     end
     @testset "5-bus with asymmetric line charge" begin
-       result = run_opf("../test/data/pti/case5_alc.raw", SDPWRMPowerModel, sdp_solver)
+        result = run_opf("../test/data/pti/case5_alc.raw", SDPWRMPowerModel, sdp_solver)
 
-       @test result["termination_status"] == OPTIMAL
-       @test isapprox(result["objective"], 1005.31; atol = 1e0)
+        @test result["termination_status"] == OPTIMAL
+        @test isapprox(result["objective"], 1005.31; atol = 1e0)
     end
     @testset "5-bus with negative generators" begin
         result = run_opf("../test/data/matpower/case5_npg.m", SDPWRMPowerModel, sdp_solver)
@@ -962,7 +950,6 @@ end
     end
 end
 
-
 @testset "test sdp opf with constraint decomposition" begin
     @testset "3-bus case" begin
         result = run_opf("../test/data/matpower/case3.m", SparseSDPWRMPowerModel, sdp_solver)
@@ -972,8 +959,8 @@ end
         @test isapprox(result["objective"], 5818.00; atol = 1e1)
         #@test isapprox(result["objective"], 5852.51; atol = 1e1)
 
-        @test haskey(result["solution"]["w_group"]["1"],"WR")
-        @test haskey(result["solution"]["w_group"]["1"],"WI")
+        @test haskey(result["solution"]["w_group"]["1"], "WR")
+        @test haskey(result["solution"]["w_group"]["1"], "WI")
         @test isapprox(result["solution"]["bus"]["1"]["w"], 1.179, atol = 1e-2)
         @test isapprox(result["solution"]["branch"]["1"]["wr"], 0.941, atol = 1e-2)
         @test isapprox(result["solution"]["branch"]["1"]["wi"], 0.269, atol = 1e-2)
@@ -1011,21 +998,23 @@ end
         # too slow for unit tests
         #data = PowerModels.parse_file("../test/data/matpower/case14.m")
         data = PowerModels.parse_file("../test/data/pti/case5_alc.raw")
-        pm = InfrastructureModels.InitializeInfrastructureModel(SparseSDPWRMPowerModel, data, PowerModels._pm_global_keys, PowerModels.pm_it_sym)
+        pm = InfrastructureModels.InitializeInfrastructureModel(
+            SparseSDPWRMPowerModel, data,
+            PowerModels._pm_global_keys, PowerModels.pm_it_sym)
         PowerModels.ref_add_core!(pm.ref)
 
         nw = collect(nw_ids(pm))[1]
 
         cadj, lookup_index, sigma = PowerModels._chordal_extension(pm, nw)
         cliques = PowerModels._maximal_cliques(cadj)
-        lookup_bus_index = Dict((reverse(p) for p = pairs(lookup_index)))
+        lookup_bus_index = Dict((reverse(p) for p in pairs(lookup_index)))
         groups = [[lookup_bus_index[gi] for gi in g] for g in cliques]
         @test PowerModels._problem_size(groups) == 83
 
         pm.ext[:SDconstraintDecomposition] = PowerModels._SDconstraintDecomposition(groups, lookup_index, sigma)
 
         PowerModels.build_opf(pm)
-        result = optimize_model!(pm, optimizer=sdp_solver)
+        result = optimize_model!(pm, optimizer = sdp_solver)
 
         @test result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 1005.31; atol = 1e0)

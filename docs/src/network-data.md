@@ -7,12 +7,14 @@ Internally PowerModels utilizes a dictionary to store network data. The dictiona
 The data dictionary organization and key names are designed to be mostly consistent with the [Matpower](http://www.pserc.cornell.edu/matpower/) file format and should be familiar to power system researchers, with the notable exceptions that loads and shunts are now split into separate components (see example below), and in the case of `"multinetwork"` data, most often used for time series.
 
 Following the conventions of the InfrastructureModels ecosystem, all PowerModels components have the following standard parameters unless noted otherwise:
-- `"index":<int>` the component's unique integer id, which is also its lookup id
-- `"status":<int>` a {1,0} flag that determines if the component is active or not, respectively.
-- (`"name":<string>`) a human readable name for the component
-- (`"source_id":<vector{string}>`) a list of string data forming a unique id from a source data format
+
+  - `"index":<int>` the component's unique integer id, which is also its lookup id
+  - `"status":<int>` a {1,0} flag that determines if the component is active or not, respectively.
+  - (`"name":<string>`) a human readable name for the component
+  - (`"source_id":<vector{string}>`) a list of string data forming a unique id from a source data format
 
 The PowerModels network data dictionary structure is roughly as follows:
+
 ```json
 {
 "per_unit":<boolean>,            # A boolean value indicating if the component parameters are in mixed-units or per unit (p.u.)
@@ -192,23 +194,24 @@ For a detailed list of all possible parameters refer to the specification docume
 
 The PowerModels network data dictionary differs from the Matpower format in the following ways,
 
-- All PowerModels components have an `index` parameter, which can be used to uniquely identify that network element.
-- All network parameters are in per-unit and angles are in radians.
-- All non-transformer branches are given nominal transformer values (i.e. a tap of 1.0 and a shift of 0.0).
-- All branches have a `transformer` field indicating if they are a transformer or not.
-- Thermal limit (`rate`) and current (`c_rating`) ratings on branches are optional.
-- When present, the `gencost` data is incorporated into the `gen` data, the column names remain the same.
-- When present, the `dclinecost` data is incorporated into the `dcline` data, the column names remain the same.
-- When present, the `bus_names` data is incorporated into the `bus` data under the property `"bus_name"`.
-- Special treatment is given to the optional `ne_branch` matrix to support the TNEP problem.
-- Load data are split off from `bus` data into `load` data under the same property names.
-- Shunt data are split off from `bus` data into `shunt` data under the same property names.
+  - All PowerModels components have an `index` parameter, which can be used to uniquely identify that network element.
+  - All network parameters are in per-unit and angles are in radians.
+  - All non-transformer branches are given nominal transformer values (i.e. a tap of 1.0 and a shift of 0.0).
+  - All branches have a `transformer` field indicating if they are a transformer or not.
+  - Thermal limit (`rate`) and current (`c_rating`) ratings on branches are optional.
+  - When present, the `gencost` data is incorporated into the `gen` data, the column names remain the same.
+  - When present, the `dclinecost` data is incorporated into the `dcline` data, the column names remain the same.
+  - When present, the `bus_names` data is incorporated into the `bus` data under the property `"bus_name"`.
+  - Special treatment is given to the optional `ne_branch` matrix to support the TNEP problem.
+  - Load data are split off from `bus` data into `load` data under the same property names.
+  - Shunt data are split off from `bus` data into `shunt` data under the same property names.
 
 ## Working with the Network Data Dictionary
 
 Data exchange via JSON files is ideal for building algorithms, however it is hard to for humans to read and process.  To that end PowerModels provides various helper functions for manipulating the network data dictionary.
 
 The first of these helper functions are `make_per_unit` and `make_mixed_units!`, which convert the units of the data inside a network data dictionary.  The *mixed units* format follows the unit conventions from Matpower and other common power network formats where some of the values are in per unit and others are the true values.  These functions can be used as follows,
+
 ```
 network_data = PowerModels.parse_file("matpower/case3.m")
 PowerModels.print_summary(network_data) # default per-unit form
@@ -217,6 +220,7 @@ PowerModels.print_summary(network_data) # mixed units form
 ```
 
 Another useful helper function is `update_data`, which takes two network data dictionaries and updates the values in the first dictionary with the values from the second dictionary.  This is particularly helpful when applying sparse updates to network data.  A good example is using the solution of one computation to update the data in preparation for a second computation, like so,
+
 ```
 data = PowerModels.parse_file("matpower/case3.m")
 opf_result = solve_ac_opf(data, Ipopt.Optimizer)
@@ -228,15 +232,16 @@ PowerModels.print_summary(pf_result["solution"])
 ```
 
 A variety of helper functions are available for processing the topology of the network.  For example, `connected_components` will compute the collections of buses that are connected by branches (i.e. the network's islands).  By default PowerModels will attempt to solve all of the network components simultaneously.  The `select_largest_component` function can be used to only consider the largest component in the network.  Finally the `propagate_topology_status!` can be used to explicitly deactivate components that are implicitly inactive due to the status of other components (e.g. deactivating branches based on the status of their connecting buses), like so,
+
 ```
 data = PowerModels.parse_file("matpower/case3.m")
 PowerModels.propagate_topology_status!(data)
 opf_result = solve_ac_opf(data, Ipopt.Optimizer)
 ```
+
 The `test/data/matpower/case7_tplgy.m` case provides an example of the kind of component status deductions that can be made.  The `simplify_network!`, `propagate_topology_status!` and `deactivate_isolated_components!` functions can be helpful in diagnosing network models that do not converge or have an infeasible solution.
 
 For details on all of the network data helper functions see, `src/core/data.jl`.
-
 
 ## Working with Matpower Data Files
 
@@ -246,8 +251,8 @@ In addition to parsing the standard Matpower parameters, PowerModels also suppor
 
 Note that for DC lines, the flow results are returned using the same convention as for the AC lines, i.e. positive values for `p_from`/`q_from `and `p_to`/`q_to` indicating power flow from the 'to' node or 'from' node into the line. This means that w.r.t matpower the sign is identical for `p_from`, but opposite for `q_from`/`p_to`/`q_to`.
 
-
 ### Single Values
+
 Single values are added to the root of the dictionary as follows,
 
 ```
@@ -367,18 +372,18 @@ becomes
 
 PowerModels also has support for parsing PTI network files in the `.raw` format that follow the PSS(R)E v33 specification.  Currently PowerModels supports the following PTI components,
 
-- Buses
-- Loads (constant power)
-- Fixed Shunts
-- Switch Shunts (default configuration)
-- Generators
-- Branches
-- Transformers (two and three winding)
-- Two-Terminal HVDC Lines (approximate)
-- Voltage Source Converter HVDC Lines (approximate)
+  - Buses
+  - Loads (constant power)
+  - Fixed Shunts
+  - Switch Shunts (default configuration)
+  - Generators
+  - Branches
+  - Transformers (two and three winding)
+  - Two-Terminal HVDC Lines (approximate)
+  - Voltage Source Converter HVDC Lines (approximate)
 
 In addition to parsing the standard parameters required by PowerModels for calculations, PowerModels also supports parsing additional data fields that are defined by the PSS(R)E specification, but not used by PowerModels directly. This can be achieved via the `import_all` optional keyword argument in `parse_file` when loading a `.raw` file, e.g.
 
 ```julia
-PowerModels.parse_file("pti/case3.raw"; import_all=true)
+PowerModels.parse_file("pti/case3.raw"; import_all = true)
 ```

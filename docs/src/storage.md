@@ -2,16 +2,18 @@
 
 In addition to the standard transmission network components (e.g. bus, load, generator, branch, ...) PowerModels also includes a generic storage component, which can be configured to model a variety of storage devices.  This section provides a brief overview of the storage component's data and mathematical model.  The motivations and derivation of this model are discussed in this [technical report](https://arxiv.org/abs/2004.14768).
 
-
 ## Storage Data Model
 
-When parsing a matpower file with storage information, 
+When parsing a matpower file with storage information,
+
 ```julia
 data = PowerModels.parse_file("matpower/case5_strg.m")
 ```
+
 the storage information can be retrieved via the `"storage"` keyword in the `data` dictionary. They will be correspondingly rendered when `PowerModels.print_summary(data)` or `PowerModels.component_table(data, "storage", <columns>)` is called.
 
 The list of columns for the generic storage model is roughly as follows,
+
 ```json
 {
   "index":<int>,
@@ -35,6 +37,7 @@ The list of columns for the generic storage model is roughly as follows,
   "status":<int>,
 }
 ```
+
 All of these quantities should be positive except for `qmin`,`p_loss` and `q_loss`, which can be negative.  The `efficiency` parameters are unit-less scalars in the range of 1.0 and 0.0.  By default, all of these quantities are used in per unit inside PowerModels.  The units indicated here are only used by PowerModels' mixed-unit representation and the extended Matpower network format.
 
 Note that the optional `thermal_rating` and `current_rating` parameters are applied at the point of coupling to the network while the other ratings are internal to the storage device.
@@ -42,6 +45,7 @@ Note that the optional `thermal_rating` and `current_rating` parameters are appl
 In addition to these component parameters, PowerModels also requires a global parameter `time_elapsed` (in hours) to specify how active power is converted into units of energy as the storage device is charged or discharged.
 
 PowerModels' storage components can be added to Matpower data files as follows,
+
 ```matlab
 % hours
 mpc.time_elapsed = 1.0
@@ -53,8 +57,8 @@ mpc.storage = [
    10  0.0  0.0  30.0  100.0   50.0  70.0  0.9   0.8   100.0   -50.0   70.0  0.1   0.0   0.0   0.0   1;
 ];
 ```
-Note that this Matpower-based format includes the optional `thermal_rating` parameter.
 
+Note that this Matpower-based format includes the optional `thermal_rating` parameter.
 
 ## Storage Mathematical Model
 
@@ -94,19 +98,17 @@ Given the storage data model and two sequential time points $s$ and $t$, the sto
 \end{align}
 ```
 
-
 ### Mapping to PowerModels Functions
-- Eq. $\eqref{var_strg_energy}$ - [`variable_storage_energy`](@ref)
-- Eq. $\eqref{var_strg_charge}$ - [`variable_storage_charge`](@ref)
-- Eq. $\eqref{var_strg_discharge}$ - [`variable_storage_discharge`](@ref)
-- Eq. $\eqref{var_strg_qslack}$ - [`variable_storage_power_control_imaginary`](@ref)
-- Eq. $\eqref{var_strg_power}$ - [`variable_storage_power`](@ref)
-- Eq. $\eqref{var_strg_current}$ - implemented as a function of other variables
-- Eq. $\eqref{eq_strg_energy}$ - [`constraint_storage_state`](@ref)
-- Eq. $\eqref{eq_strg_compl}$ - [`constraint_storage_complementarity_nl`](@ref) or [`constraint_storage_complementarity_mi`](@ref)
-- Eq. $\eqref{eq_strg_loss}$ - [`constraint_storage_losses`](@ref)
-- Eq. $\eqref{eq_strg_q_limit}$ - bounds of [`variable_storage_power`](@ref)
-- Eq. $\eqref{eq_strg_thermal_limit}$ - [`constraint_storage_thermal_limit`](@ref)
-- Eq. $\eqref{eq_strg_current_limit}$ - [`constraint_storage_current_limit`](@ref)
 
-
+  - Eq. $\eqref{var_strg_energy}$ - [`variable_storage_energy`](@ref)
+  - Eq. $\eqref{var_strg_charge}$ - [`variable_storage_charge`](@ref)
+  - Eq. $\eqref{var_strg_discharge}$ - [`variable_storage_discharge`](@ref)
+  - Eq. $\eqref{var_strg_qslack}$ - [`variable_storage_power_control_imaginary`](@ref)
+  - Eq. $\eqref{var_strg_power}$ - [`variable_storage_power`](@ref)
+  - Eq. $\eqref{var_strg_current}$ - implemented as a function of other variables
+  - Eq. $\eqref{eq_strg_energy}$ - [`constraint_storage_state`](@ref)
+  - Eq. $\eqref{eq_strg_compl}$ - [`constraint_storage_complementarity_nl`](@ref) or [`constraint_storage_complementarity_mi`](@ref)
+  - Eq. $\eqref{eq_strg_loss}$ - [`constraint_storage_losses`](@ref)
+  - Eq. $\eqref{eq_strg_q_limit}$ - bounds of [`variable_storage_power`](@ref)
+  - Eq. $\eqref{eq_strg_thermal_limit}$ - [`constraint_storage_thermal_limit`](@ref)
+  - Eq. $\eqref{eq_strg_current_limit}$ - [`constraint_storage_current_limit`](@ref)

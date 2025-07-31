@@ -1,13 +1,13 @@
 # The PowerModels Mathematical Model
 
 As PowerModels implements a variety of power network optimization problems, the implementation is the best reference for precise mathematical formulations.  This section provides a complex number based mathematical specification for a prototypical AC Optimal Power Flow problem, to provide an overview of the typical mathematical models in PowerModels.
+
 ## Sets and Parameters
 
 PowerModels implements a slightly generalized version of the AC Optimal Power Flow problem from [Matpower](http://www.pserc.cornell.edu/matpower/).  These generalizations make it possible for PowerModels to more accurately capture industrial transmission network datasets.  The core generalizations are,
 
-- Support for multiple load ($S^d_k$) and shunt ($Y^s_{k}$) components on each bus $i$
-- Line charging that supports a conductance and asymmetrical values ($Y^c_{ij}, Y^c_{ji}$)
-
+  - Support for multiple load ($S^d_k$) and shunt ($Y^s_{k}$) components on each bus $i$
+  - Line charging that supports a conductance and asymmetrical values ($Y^c_{ij}, Y^c_{ji}$)
 
 ```math
 \begin{align}
@@ -65,26 +65,24 @@ A complete mathematical model is as follows,
 
 Note that for clarity of this presentation some model variants that PowerModels supports have been omitted (e.g. piecewise linear cost functions and HVDC lines).  Details about these variants is available in the [Matpower](http://www.pserc.cornell.edu/matpower/) documentation.
 
-
 ### Mapping to PowerModels Functions
-- Eq. $\eqref{var_generation}$ - [`variable_gen_power`](@ref)
-- Eq. $\eqref{var_voltage}$ - [`variable_bus_voltage`](@ref)
-- Eq. $\eqref{var_complex_power}$ - [`variable_branch_power`](@ref)
-- Eq. $\eqref{eq_objective}$ - [`objective_min_fuel_cost`](@ref)
-- Eq. $\eqref{eq_ref_bus}$ - [`constraint_theta_ref`](@ref)
-- Eq. $\eqref{eq_gen_bounds}$ - bounds of [`variable_gen_power`](@ref)
-- Eq. $\eqref{eq_voltage_bounds}$ - bounds of [`variable_bus_voltage`](@ref)
-- Eq. $\eqref{eq_kcl_shunt}$ - [`constraint_power_balance`](@ref)
-- Eq. $\eqref{eq_power_from}$ - [`constraint_ohms_yt_from`](@ref)
-- Eq. $\eqref{eq_power_to}$ - [`constraint_ohms_yt_to`](@ref)
-- Eq. $\eqref{eq_thermal_limit}$ - [`constraint_thermal_limit_from`](@ref) and [`constraint_thermal_limit_to`](@ref)
-- Eq. $\eqref{eq_current_limit}$ - [`constraint_current_limit`](@ref)
-- Eq. $\eqref{eq_angle_difference}$ - [`constraint_voltage_angle_difference`](@ref)
 
-
-
+  - Eq. $\eqref{var_generation}$ - [`variable_gen_power`](@ref)
+  - Eq. $\eqref{var_voltage}$ - [`variable_bus_voltage`](@ref)
+  - Eq. $\eqref{var_complex_power}$ - [`variable_branch_power`](@ref)
+  - Eq. $\eqref{eq_objective}$ - [`objective_min_fuel_cost`](@ref)
+  - Eq. $\eqref{eq_ref_bus}$ - [`constraint_theta_ref`](@ref)
+  - Eq. $\eqref{eq_gen_bounds}$ - bounds of [`variable_gen_power`](@ref)
+  - Eq. $\eqref{eq_voltage_bounds}$ - bounds of [`variable_bus_voltage`](@ref)
+  - Eq. $\eqref{eq_kcl_shunt}$ - [`constraint_power_balance`](@ref)
+  - Eq. $\eqref{eq_power_from}$ - [`constraint_ohms_yt_from`](@ref)
+  - Eq. $\eqref{eq_power_to}$ - [`constraint_ohms_yt_to`](@ref)
+  - Eq. $\eqref{eq_thermal_limit}$ - [`constraint_thermal_limit_from`](@ref) and [`constraint_thermal_limit_to`](@ref)
+  - Eq. $\eqref{eq_current_limit}$ - [`constraint_current_limit`](@ref)
+  - Eq. $\eqref{eq_angle_difference}$ - [`constraint_voltage_angle_difference`](@ref)
 
 ## AC Optimal Power Flow for the Branch Flow Model
+
 The same assumptions apply as before. The series impedance is $Z_{ij}=(Y_{ij})^{-1}$.
 In comparison  with the BIM, a new variable $I^{s}_{ij}$, representing the current in the direction $i$ to $j$, through the series part of the pi-section, is introduced.
 A complete mathematical formulation for a Branch Flow Model is conceived as:
@@ -116,17 +114,18 @@ A complete mathematical formulation for a Branch Flow Model is conceived as:
 \end{align}
 ```
 
-Note that constraints $\eqref{eq_line_losses} - \eqref{eq_ohms_bfm}$ replace $\eqref{eq_power_from} - \eqref{eq_power_to}$ but the remainder of the problem formulation is identical. Furthermore, the problems have the same feasible set.  
+Note that constraints $\eqref{eq_line_losses} - \eqref{eq_ohms_bfm}$ replace $\eqref{eq_power_from} - \eqref{eq_power_to}$ but the remainder of the problem formulation is identical. Furthermore, the problems have the same feasible set.
 
 ### Mapping to PowerModels Functions
-- Eq. $\eqref{var_branch_current}$ - [`variable_branch_current`](@ref)
-- Eq. $\eqref{eq_line_losses}$ - [`constraint_power_losses`](@ref)
-- Eq. $\eqref{eq_series_power_flow}$ - implicit, substituted out before implementation
-- Eq. $\eqref{eq_complex_power_definition}$ - [`constraint_model_voltage`](@ref)
-- Eq. $\eqref{eq_ohms_bfm}$ - [`constraint_voltage_magnitude_difference`](@ref)
 
+  - Eq. $\eqref{var_branch_current}$ - [`variable_branch_current`](@ref)
+  - Eq. $\eqref{eq_line_losses}$ - [`constraint_power_losses`](@ref)
+  - Eq. $\eqref{eq_series_power_flow}$ - implicit, substituted out before implementation
+  - Eq. $\eqref{eq_complex_power_definition}$ - [`constraint_model_voltage`](@ref)
+  - Eq. $\eqref{eq_ohms_bfm}$ - [`constraint_voltage_magnitude_difference`](@ref)
 
 ## AC Optimal Power Flow in Current-Voltage Variables
+
 A variable $I^{s}_{ij}$, representing the current in the direction $i$ to $j$, through the series part of the pi-section, is used.
 The mathematical structure for a current-voltage formulation is conceived as:
 
@@ -157,9 +156,10 @@ The mathematical structure for a current-voltage formulation is conceived as:
 ```
 
 ### Mapping to PowerModels Functions
-- Eq. $\eqref{var_total_current}$ - total current flow into a branch on either end [`variable_branch_current`](@ref)
-- Eq. $\eqref{eq_complex_power_definition_gen}$  - models active and reactive power range of a generator [`variable_gen_current`](@ref)
-- Eq. $\eqref{eq_kcl_current}$  - Kirchhoff's current law in current variables  [`constraint_current_balance`](@ref)
-- Eq. $\eqref{eq_current_from}$  - branch from-side current constraint in [`constraint_current_from`](@ref)
-- Eq. $\eqref{eq_current_to}$  - branch to-side current constraint in [`constraint_current_to`](@ref)
-- Eq. $\eqref{eq_ohms_iv}$  - Ohm's law [`constraint_voltage_drop`](@ref)
+
+  - Eq. $\eqref{var_total_current}$ - total current flow into a branch on either end [`variable_branch_current`](@ref)
+  - Eq. $\eqref{eq_complex_power_definition_gen}$  - models active and reactive power range of a generator [`variable_gen_current`](@ref)
+  - Eq. $\eqref{eq_kcl_current}$  - Kirchhoff's current law in current variables  [`constraint_current_balance`](@ref)
+  - Eq. $\eqref{eq_current_from}$  - branch from-side current constraint in [`constraint_current_from`](@ref)
+  - Eq. $\eqref{eq_current_to}$  - branch to-side current constraint in [`constraint_current_to`](@ref)
+  - Eq. $\eqref{eq_ohms_iv}$  - Ohm's law [`constraint_voltage_drop`](@ref)

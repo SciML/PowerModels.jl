@@ -10,7 +10,8 @@
     @testset "README.md - Modifying Network Data" begin
         network_data = PowerModels.parse_file("../test/data/matpower/case3.m")
 
-        result = run_opf(network_data, ACPPowerModel, JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level"=>0))
+        result = run_opf(network_data, ACPPowerModel,
+            JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level"=>0))
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 5906.88; atol = 1e0)
@@ -18,7 +19,8 @@
         network_data["load"]["3"]["pd"] = 0.0
         network_data["load"]["3"]["qd"] = 0.0
 
-        result = run_opf(network_data, ACPPowerModel, JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level"=>0))
+        result = run_opf(network_data, ACPPowerModel,
+            JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level"=>0))
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 2937.16; atol = 1e0)
@@ -33,7 +35,8 @@
         @test num_nonlinear_constraints(pm.model) == 12
         @test JuMP.num_variables(pm.model) == 28
 
-        result = optimize_model!(pm, optimizer=JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level"=>0))
+        result = optimize_model!(
+            pm, optimizer = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level"=>0))
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 5906.88; atol = 1e0)

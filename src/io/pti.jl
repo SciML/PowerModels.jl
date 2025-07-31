@@ -4,7 +4,6 @@
 #                                                                   #
 #####################################################################
 
-
 """
 A list of data file sections in the order that they appear in a PTI v33 file
 """
@@ -14,7 +13,6 @@ const _pti_sections = ["CASE IDENTIFICATION", "BUS", "LOAD", "FIXED SHUNT",
     "MULTI-TERMINAL DC", "MULTI-SECTION LINE", "ZONE", "INTER-AREA TRANSFER",
     "OWNER", "FACTS CONTROL DEVICE", "SWITCHED SHUNT", "GNE DEVICE",
     "INDUCTION MACHINE"]
-
 
 const _transaction_dtypes = [("IC", Int), ("SBASE", Float64), ("REV", Int),
     ("XFRRAT", Int), ("NXFRAT", Int), ("BASFRQ", Float64)]
@@ -79,7 +77,7 @@ const _transformer_3_4_dtypes = [("WINDV3", Float64), ("NOMV3", Float64),
     ("RMI3", Float64), ("VMA3", Float64), ("VMI3", Float64), ("NTP3", Float64),
     ("TAB3", Int), ("CR3", Float64), ("CX3", Float64), ("CNXA3", Float64)]
 
-const _transformer_2_1_dtypes = [("R1-2", Float64), ("X1-2", Float64), 
+const _transformer_2_1_dtypes = [("R1-2", Float64), ("X1-2", Float64),
     ("SBASE1-2", Float64)]
 
 const _transformer_2_2_dtypes = [("WINDV1", Float64), ("NOMV1", Float64),
@@ -90,7 +88,7 @@ const _transformer_2_2_dtypes = [("WINDV1", Float64), ("NOMV1", Float64),
 
 const _transformer_2_3_dtypes = [("WINDV2", Float64), ("NOMV2", Float64)]
 
-const _area_interchange_dtypes = [("I", Int), ("ISW", Int), 
+const _area_interchange_dtypes = [("I", Int), ("ISW", Int),
     ("PDES", Float64), ("PTOL", Float64), ("ARNAME", String)]
 
 const _two_terminal_line_dtypes = [("NAME", String), ("MDC", Int),
@@ -186,12 +184,11 @@ const _induction_machine_dtypes = [("I", Int), ("ID", String),
     ("E2", Float64), ("SE2", Float64), ("IA1", Float64), ("IA2", Float64),
     ("XAMULT", Float64)]
 
-
 """
 lookup array of data types for PTI file sections given by
 `field_name`, as enumerated by PSS/E Program Operation Manual.
 """
-const _pti_dtypes = Dict{String,Array}(
+const _pti_dtypes = Dict{String, Array}(
     "BUS" => _bus_dtypes,
     "LOAD" => _load_dtypes,
     "FIXED SHUNT" => _fixed_shunt_dtypes,
@@ -225,8 +222,6 @@ const _pti_dtypes = Dict{String,Array}(
     "INDUCTION MACHINE" => _induction_machine_dtypes
 )
 
-
-
 const _default_case_identification = Dict("IC" => 0, "SBASE" => 100.0,
     "REV" => 33, "XFRRAT" => 0, "NXFRAT" => 0, "BASFRQ" => 60)
 
@@ -244,7 +239,7 @@ const _default_generator = Dict("ID" => "1", "PG" => 0.0, "QG" => 0.0, "QT" => 9
     "QB" => -9999.0, "VS" => 1.0, "IREG" => 0, "MBASE" => nothing, "ZR" => 0.0,
     "ZX" => 1.0, "RT" => 0.0, "XT" => 0.0, "GTAP" => 1.0, "STAT" => 1,
     "RMPCT" => 100.0, "PT" => 9999.0, "PB" => -9999.0, "O1" => nothing,
-    "O2" => 0, "O3" => 0, "O4" => 0, "F1" => 1.0,"F2" => 1.0, "F3" => 1.0,
+    "O2" => 0, "O3" => 0, "O4" => 0, "F1" => 1.0, "F2" => 1.0, "F3" => 1.0,
     "F4" => 1.0, "WMOD" => 0, "WPF" => 1.0)
 
 const _default_branch = Dict("CKT" => "1", "B" => 0.0, "RATEA" => 0.0,
@@ -298,7 +293,7 @@ const _default_vsc_dc = Dict("MDC" => 1, "O1" => nothing, "O2" => 0, "O3" => 0,
         "BLOSS" => 0.0, "MINLOSS" => 0.0, "SMAX" => 0.0, "IMAX" => 0.0,
         "PWF" => 1.0, "MAXQ" => 9999.0, "MINQ" => -9999.0, "REMOT" => 0,
         "RMPCT" => 100.0)
-    )
+)
 
 const _default_impedance_correction = Dict("T1" => 0.0, "T2" => 0.0, "T3" => 0.0,
     "T4" => 0.0, "T5" => 0.0, "T6" => 0.0, "T7" => 0.0, "T8" => 0.0, "T9" => 0.0,
@@ -308,11 +303,11 @@ const _default_impedance_correction = Dict("T1" => 0.0, "T2" => 0.0, "T3" => 0.0
 
 const _default_multi_term_dc = Dict("MDC" => 0, "VCMOD" => 0.0, "VCONVN" => 0,
     "CONV" => Dict("TR" => 1.0, "TAP" => 1.0, "TPMX" => 1.5, "TPMN" => 0.51,
-        "TSTP" => 0.00625,"DCPF" => 1, "MARG" => 0.0, "CNVCOD" => 1),
+        "TSTP" => 0.00625, "DCPF" => 1, "MARG" => 0.0, "CNVCOD" => 1),
     "DCBS" => Dict("IB" => 0.0, "AREA" => 1, "ZONE" => 1,
         "DCNAME" => "            ", "IDC2" => 0, "RGRND" => 0.0, "OWNER" => 1),
     "DCLN" => Dict("DCCKT" => 1, "MET" => 1, "LDC" => 0.0)
-    )
+)
 
 const _default_multi_section = Dict("ID" => "&1", "MET" => 1)
 
@@ -369,9 +364,7 @@ const _pti_defaults = Dict("BUS" => _default_bus,
     "CASE IDENTIFICATION" => _default_case_identification,
     "GNE DEVICE" => _default_gne_device,
     "INDUCTION MACHINE" => _default_induction_machine
-    )
-
-
+)
 
 function _correct_nothing_values!(data::Dict)
     if !haskey(data, "BUS")
@@ -426,7 +419,7 @@ function _correct_nothing_values!(data::Dict)
                 end
             end
             for winding_id in ["WINDV1", "WINDV2", "WINDV3"]
-                if haskey(transformer, winding_id) &&  transformer[winding_id] == nothing
+                if haskey(transformer, winding_id) && transformer[winding_id] == nothing
                     if transformer["CW"] == 2
                         transformer[winding_id] = transformer_bus["BASKV"]
                     else
@@ -477,28 +470,27 @@ function _correct_nothing_values!(data::Dict)
     end
 end
 
-
-
 """
 This is an experimental method for parsing elements and setting defaults at the same time.
 It is not currently working but would reduce memory allocations if implemented correctly.
 """
 function _parse_elements(elements::Array, dtypes::Array, defaults::Dict, section::AbstractString)
-    data = Dict{String,Any}()
+    data = Dict{String, Any}()
 
     if length(elements) > length(dtypes)
-        Memento.warn(_LOGGER, "ignoring $(length(elements) - length(dtypes)) extra values in section $section, only $(length(dtypes)) items are defined")
+        Memento.warn(_LOGGER,
+            "ignoring $(length(elements) - length(dtypes)) extra values in section $section, only $(length(dtypes)) items are defined")
         elements = elements[1:length(dtypes)]
     end
 
-    for (i,element) in enumerate(elements)
+    for (i, element) in enumerate(elements)
         field, dtype = dtypes[i]
 
         element = strip(element)
 
         if dtype == String
             if startswith(element, "'") && endswith(element, "'")
-                data[field] = element[2:end-1]
+                data[field] = element[2:(end - 1)]
             else
                 data[field] = element
             end
@@ -513,7 +505,8 @@ function _parse_elements(elements::Array, dtypes::Array, defaults::Dict, section
                     if isa(message, Meta.ParseError)
                         data[field] = element
                     else
-                        Memento.error(_LOGGER, "value '$element' for $field in section $section is not of type $dtype.")
+                        Memento.error(_LOGGER,
+                            "value '$element' for $field in section $section is not of type $dtype.")
                     end
                 end
             end
@@ -542,7 +535,6 @@ function _parse_elements(elements::Array, dtypes::Array, defaults::Dict, section
     return data
 end
 
-
 """
     _parse_line_element!(data, elements, section)
 
@@ -566,7 +558,7 @@ function _parse_line_element!(data::Dict, elements::Array, section::AbstractStri
                 data[field] = parse(dtype, element)
             else
                 if dtype == String && startswith(element, "'") && endswith(element, "'")
-                    data[field] = chop(element[nextind(element,1):end])
+                    data[field] = chop(element[nextind(element, 1):end])
                 else
                     data[field] = element
                 end
@@ -575,7 +567,8 @@ function _parse_line_element!(data::Dict, elements::Array, section::AbstractStri
             if isa(message, Meta.ParseError)
                 data[field] = element
             else
-                Memento.error(_LOGGER, "value '$element' for $field in section $section is not of type $dtype.")
+                Memento.error(_LOGGER,
+                    "value '$element' for $field in section $section is not of type $dtype.")
             end
         end
     end
@@ -586,14 +579,12 @@ function _parse_line_element!(data::Dict, elements::Array, section::AbstractStri
         end
         missing_str = join(missing_fields, ", ")
         if !(section == "SWITCHED SHUNT" && startswith(missing_str, "N")) &&
-            !(section == "MULTI-SECTION LINE" && startswith(missing_str, "DUM")) &&
-            !(section == "IMPEDANCE CORRECTION" && startswith(missing_str, "T"))
+           !(section == "MULTI-SECTION LINE" && startswith(missing_str, "DUM")) &&
+           !(section == "IMPEDANCE CORRECTION" && startswith(missing_str, "T"))
             Memento.warn(_LOGGER, "The following fields in $section are missing: $missing_str")
         end
     end
 end
-
-
 
 const _comment_split = r"(?!\B[\'][^\']*)[\/](?![^\']*[\']\B)"
 const _split_string = r",(?=(?:[^']*'[^']*')*[^']*$)"
@@ -608,10 +599,11 @@ are also extracted separately, and `Array{Array{String}, String}` is returned.
 """
 function _get_line_elements(line::AbstractString)
     if count(i->(i=="'"), line) % 2 == 1
-        throw(Memento.error(_LOGGER, "There are an uneven number of single-quotes in \"{line}\", the line cannot be parsed."))
+        throw(Memento.error(_LOGGER,
+            "There are an uneven number of single-quotes in \"{line}\", the line cannot be parsed."))
     end
 
-    line_comment = split(line, _comment_split, limit=2)
+    line_comment = split(line, _comment_split, limit = 2)
     line = strip(line_comment[1])
     comment = length(line_comment) > 1 ? strip(line_comment[2]) : ""
 
@@ -619,7 +611,6 @@ function _get_line_elements(line::AbstractString)
 
     return (elements, comment)
 end
-
 
 """
     _parse_pti_data(data_string, sections)
@@ -635,10 +626,10 @@ function _parse_pti_data(data_io::IO)
     skip_sublines = 0
     subsection = ""
 
-    pti_data = Dict{String,Array{Dict}}()
+    pti_data = Dict{String, Array{Dict}}()
 
     section = popfirst!(sections)
-    section_data = Dict{String,Any}()
+    section_data = Dict{String, Any}()
 
     for (line_number, line) in enumerate(data_lines)
         (elements, comment) = _get_line_elements(line)
@@ -652,7 +643,8 @@ function _parse_pti_data(data_io::IO)
             end
 
             if length(elements) > 1
-                Memento.warn(_LOGGER, "At line $line_number, new section started with '0', but additional non-comment data is present. Pattern '^\\s*0\\s*[/]*.*' is reserved for section start/end.")
+                Memento.warn(_LOGGER,
+                    "At line $line_number, new section started with '0', but additional non-comment data is present. Pattern '^\\s*0\\s*[/]*.*' is reserved for section start/end.")
             elseif length(comment) > 0
                 Memento.debug(_LOGGER, "At line $line_number, switched to $section")
             end
@@ -665,7 +657,7 @@ function _parse_pti_data(data_io::IO)
         else
             if line_number == 4
                 section = popfirst!(sections)
-                section_data = Dict{String,Any}()
+                section_data = Dict{String, Any}()
             end
 
             if skip_lines > 0
@@ -674,13 +666,16 @@ function _parse_pti_data(data_io::IO)
             end
 
             Memento.debug(_LOGGER, join(["Section:", section], " "))
-            if !(section in ["CASE IDENTIFICATION","TRANSFORMER","VOLTAGE SOURCE CONVERTER","MULTI-TERMINAL DC","TWO-TERMINAL DC","GNE DEVICE"])
-                section_data = Dict{String,Any}()
+            if !(section in [
+                "CASE IDENTIFICATION", "TRANSFORMER", "VOLTAGE SOURCE CONVERTER",
+                "MULTI-TERMINAL DC", "TWO-TERMINAL DC", "GNE DEVICE"])
+                section_data = Dict{String, Any}()
 
                 try
                     _parse_line_element!(section_data, elements, section)
                 catch message
-                    throw(Memento.error(_LOGGER, "Parsing failed at line $line_number: $(sprint(showerror, message))"))
+                    throw(Memento.error(_LOGGER,
+                        "Parsing failed at line $line_number: $(sprint(showerror, message))"))
                 end
 
             elseif section == "CASE IDENTIFICATION"
@@ -688,11 +683,13 @@ function _parse_pti_data(data_io::IO)
                     try
                         _parse_line_element!(section_data, elements, section)
                     catch message
-                        throw(Memento.error(_LOGGER, "Parsing failed at line $line_number: $(sprint(showerror, message))"))
+                        throw(Memento.error(_LOGGER,
+                            "Parsing failed at line $line_number: $(sprint(showerror, message))"))
                     end
 
                     if section_data["REV"] != "" && section_data["REV"] < 33
-                        Memento.warn(_LOGGER, "Version $(section_data["REV"]) of PTI format is unsupported, parser may not function correctly.")
+                        Memento.warn(_LOGGER,
+                            "Version $(section_data["REV"]) of PTI format is unsupported, parser may not function correctly.")
                     end
                 else
                     section_data["Comment_Line_$(line_number - 1)"] = line
@@ -703,7 +700,7 @@ function _parse_pti_data(data_io::IO)
                 end
 
             elseif section == "TRANSFORMER"
-                section_data = Dict{String,Any}()
+                section_data = Dict{String, Any}()
                 if parse(Int, _get_line_elements(line)[1][3]) == 0 # two winding transformer
                     winding = "TWO-WINDING"
                     skip_lines = 3
@@ -719,7 +716,9 @@ function _parse_pti_data(data_io::IO)
                         if transformer_line == 0
                             temp_section = section
                         else
-                            temp_section = join([section, winding, "LINE", transformer_line], " ")
+                            temp_section = join(
+                                [
+                                    section, winding, "LINE", transformer_line], " ")
                         end
 
                         if winding == "TWO-WINDING" && transformer_line == 4
@@ -730,23 +729,25 @@ function _parse_pti_data(data_io::IO)
                         end
                     end
                 catch message
-                    throw(Memento.error(_LOGGER, "Parsing failed at line $line_number: $(sprint(showerror, message))"))
+                    throw(Memento.error(_LOGGER,
+                        "Parsing failed at line $line_number: $(sprint(showerror, message))"))
                 end
 
             elseif section == "VOLTAGE SOURCE CONVERTER"
                 if length(_get_line_elements(line)[1]) == 11
-                    section_data = Dict{String,Any}()
+                    section_data = Dict{String, Any}()
                     try
                         _parse_line_element!(section_data, elements, section)
                     catch message
-                        throw(Memento.error(_LOGGER, "Parsing failed at line $line_number: $(sprint(showerror, message))"))
+                        throw(Memento.error(_LOGGER,
+                            "Parsing failed at line $line_number: $(sprint(showerror, message))"))
                     end
                     skip_sublines = 2
                     continue
 
                 elseif skip_sublines > 0
                     skip_sublines -= 1
-                    subsection_data = Dict{String,Any}()
+                    subsection_data = Dict{String, Any}()
 
                     for (field, dtype) in _pti_dtypes["$section SUBLINES"]
                         element = popfirst!(elements)
@@ -766,25 +767,28 @@ function _parse_pti_data(data_io::IO)
                 end
 
             elseif section == "TWO-TERMINAL DC"
-                section_data = Dict{String,Any}()
+                section_data = Dict{String, Any}()
                 if length(_get_line_elements(line)[1]) == 12
-                    (elements, comment) = _get_line_elements(join(data_lines[line_number:line_number + 2], ','))
+                    (elements,
+                        comment) = _get_line_elements(join(data_lines[line_number:(line_number + 2)], ','))
                     skip_lines = 2
                 end
 
                 try
                     _parse_line_element!(section_data, elements, section)
                 catch message
-                    throw(Memento.error(_LOGGER, "Parsing failed at line $line_number: $(sprint(showerror, message))"))
+                    throw(Memento.error(_LOGGER,
+                        "Parsing failed at line $line_number: $(sprint(showerror, message))"))
                 end
 
             elseif section == "MULTI-TERMINAL DC"
                 if skip_sublines == 0
-                    section_data = Dict{String,Any}()
+                    section_data = Dict{String, Any}()
                     try
                         _parse_line_element!(section_data, elements, section)
                     catch message
-                        throw(Memento.error(_LOGGER, "Parsing failed at line $line_number: $(sprint(showerror, message))"))
+                        throw(Memento.error(_LOGGER,
+                            "Parsing failed at line $line_number: $(sprint(showerror, message))"))
                     end
 
                     if section_data["NCONV"] > 0
@@ -805,15 +809,17 @@ function _parse_pti_data(data_io::IO)
                 if skip_sublines > 0
                     skip_sublines -= 1
 
-                    subsection_data = Dict{String,Any}()
+                    subsection_data = Dict{String, Any}()
                     try
                         _parse_line_element!(subsection_data, elements, "$section $subsection")
                     catch message
-                        throw(Memento.error(_LOGGER, "Parsing failed at line $line_number: $(sprint(showerror, message))"))
+                        throw(Memento.error(_LOGGER,
+                            "Parsing failed at line $line_number: $(sprint(showerror, message))"))
                     end
 
                     if haskey(section_data, "$(subsection[2:end])")
-                        section_data["$(subsection[2:end])"] = push!(section_data["$(subsection[2:end])"], subsection_data)
+                        section_data["$(subsection[2:end])"] = push!(
+                            section_data["$(subsection[2:end])"], subsection_data)
                         if skip_sublines > 0 && subsection != "NDCLN"
                             continue
                         end
@@ -863,7 +869,6 @@ function _parse_pti_data(data_io::IO)
     return pti_data
 end
 
-
 """
     parse_pti(filename::String)
 
@@ -878,7 +883,6 @@ function parse_pti(filename::String)::Dict
     return pti_data
 end
 
-
 """
     parse_pti(io::IO)
 
@@ -888,15 +892,14 @@ proper types.
 function parse_pti(io::IO)::Dict
     pti_data = _parse_pti_data(io)
     try
-        pti_data["CASE IDENTIFICATION"][1]["NAME"] = match(r"^\<file\s[\/\\]*(?:.*[\/\\])*(.*)\.raw\>$", lowercase(io.name)).captures[1]
+        pti_data["CASE IDENTIFICATION"][1]["NAME"] = match(
+            r"^\<file\s[\/\\]*(?:.*[\/\\])*(.*)\.raw\>$", lowercase(io.name)).captures[1]
     catch
         Memento.info(_LOGGER, "unable to recover case name from io file name in parse_pti")
     end
 
     return pti_data
 end
-
-
 
 """
     _populate_defaults!(pti_data)
@@ -918,7 +921,8 @@ function _populate_defaults!(data::Dict)
                                         sub_component[sub_field] = sub_component_defaults[sub_field]
                                     catch msg
                                         if isa(msg, KeyError)
-                                            Memento.warn(_LOGGER, "'$sub_field' in '$field' in '$section' has no default value")
+                                            Memento.warn(_LOGGER,
+                                                "'$sub_field' in '$field' in '$section' has no default value")
                                         else
                                             rethrow(msg)
                                         end
@@ -926,7 +930,9 @@ function _populate_defaults!(data::Dict)
                                 end
                             end
                         end
-                    elseif field_value == "" && !(field in ["Comment_Line_1", "Comment_Line_2"]) && !startswith(field, "DUM")
+                    elseif field_value == "" &&
+                           !(field in ["Comment_Line_1", "Comment_Line_2"]) &&
+                           !startswith(field, "DUM")
                         try
                             component[field] = component_defaults[field]
                         catch msg
@@ -943,13 +949,17 @@ function _populate_defaults!(data::Dict)
     end
 end
 
-"Export power network data in the pti format"
-function export_pti(data::Dict{String,Any})
+"""
+Export power network data in the pti format
+"""
+function export_pti(data::Dict{String, Any})
     return sprint(export_pti, data)
 end
 
-"Export power network data to a file in the pti format"
-function export_pti(file::AbstractString, data::Dict{String,Any})
+"""
+Export power network data to a file in the pti format
+"""
+function export_pti(file::AbstractString, data::Dict{String, Any})
     open(file, "w") do io
         export_pti(io, data)
     end
@@ -959,45 +969,48 @@ end
     export_pti(io::IO, data::Dict{String, Any})
 
 Export PowerModels network data dictionary to the as a power flow raw data
-acording to the pti format `RAW V33`. 
+acording to the pti format `RAW V33`.
 
 It is highly recommend to export the PowerModel data dictionary in the same
-format as the source data. 
+format as the source data.
 
 The `export_pti` function exports the essential components of a network:
-- Buses
-- Loads
-- Fixed Shunts
-- Generators
-- Non Tansformers Branchs
-- Transformers (Two-Windings and Three-Windings)
-- Switched Shunts (aproximate)
+
+  - Buses
+  - Loads
+  - Fixed Shunts
+  - Generators
+  - Non Tansformers Branchs
+  - Transformers (Two-Windings and Three-Windings)
+  - Switched Shunts (aproximate)
 
 If the PowerModels was parsed from a pti file with the `import_all=true` parameter:
-`data = parse_file(case3.raw, import_all=true)` 
+`data = parse_file(case3.raw, import_all=true)`
 
 It will export these aditionals items:
-- Header Options
-- Comment Lines
-- Zone Data
-- Area Data
-- Owner Data
-- Switched Shunts (with block steps)
+
+  - Header Options
+  - Comment Lines
+  - Zone Data
+  - Area Data
+  - Owner Data
+  - Switched Shunts (with block steps)
 
 Things that are not exported:
-- TNEP network specification
-- Generation Cost Data
-- Storage
-- Switches
-- DC Lines (future work, #754)
+
+  - TNEP network specification
+  - Generation Cost Data
+  - Storage
+  - Switches
+  - DC Lines (future work, #754)
 
 Things that are not exported if you use `import_all = true` to make the PowerModel data dict:
-- FACTS (Maybe in future work)
-- GNE (No intentions to export it)
-- Inter Area Transfer Data (No intentions to export it)
 
+  - FACTS (Maybe in future work)
+  - GNE (No intentions to export it)
+  - Inter Area Transfer Data (No intentions to export it)
 """
-function export_pti(io::IO, data::Dict{String,Any})
+function export_pti(io::IO, data::Dict{String, Any})
     if _IM.ismultinetwork(data)
         Memento.error(_LOGGER, "export_pti does not yet support multinetwork data")
     end
@@ -1008,23 +1021,25 @@ function export_pti(io::IO, data::Dict{String,Any})
     # Warnings for elements incompatibles with pti
     incompatible_items = ["storage", "switch"]
 
-    for item in incompatible_items 
+    for item in incompatible_items
         if haskey(data, item) && length(data[item]) > 0
             components = length(data[item])
-            Memento.warn(_LOGGER, string("Skipping export of the $(components) $(item) items because it is not suported in the PSSE 33 .raw file")) 
+            Memento.warn(_LOGGER,
+                string("Skipping export of the $(components) $(item) items because it is not suported in the PSSE 33 .raw file"))
         end
     end
-    
+
     # Warnings for not yet exported items
     not_exported_items = ["dcline", "impedance correction",
-     "multi-terminal dc", "multi-section line", "inter-area transfer",
-     "facts control device", "gne device", "induction machine"]
+        "multi-terminal dc", "multi-section line", "inter-area transfer",
+        "facts control device", "gne device", "induction machine"]
 
-    for item in not_exported_items 
+    for item in not_exported_items
         if haskey(data, item)
             components = length(data[item])
             if components > 0
-                Memento.warn(_LOGGER, string("Skipping export of the $(components) $(item) data because is not yet implemented")) 
+                Memento.warn(_LOGGER,
+                    string("Skipping export of the $(components) $(item) data because is not yet implemented"))
             end
         end
     end
@@ -1033,7 +1048,7 @@ function export_pti(io::IO, data::Dict{String,Any})
 
     #convert data to mixed unit
     if data["per_unit"]
-       make_mixed_units!(data)
+        make_mixed_units!(data)
     end
 
     # maps bus -> area, owner, zone to ser default in other componentes
@@ -1047,10 +1062,10 @@ function export_pti(io::IO, data::Dict{String,Any})
 
     for (i, bus) in data["bus"]
         bus_i = bus["bus_i"]
-        
+
         # maps area, owner, zone. 
         bus_area[bus_i] = get(bus, "area", _default_bus["AREA"])
-        bus_owner[bus_i] =  get(bus, "owner", _default_bus["OWNER"])
+        bus_owner[bus_i] = get(bus, "owner", _default_bus["OWNER"])
         bus_zone[bus_i] = get(bus, "zone", _default_bus["ZONE"])
 
         # maps three winding (check if bus is the star bus of transformer)
@@ -1063,7 +1078,7 @@ function export_pti(io::IO, data::Dict{String,Any})
                     "bus" => bus,
                     "w1" => nothing,
                     "w2" => nothing,
-                    "w3" => nothing,
+                    "w3" => nothing
                 )
             end
         end
@@ -1075,13 +1090,13 @@ function export_pti(io::IO, data::Dict{String,Any})
 
     # Comment Section
     Comment_Line_1 = get(data, "comment_line_1", "File name: $(data["name"]) - Generated by PowerModels.jl")
-    Comment_Line_2 = get(data, "comment_line_2", "Some items is not supported, please check the docs.") 
+    Comment_Line_2 = get(data, "comment_line_2", "Some items is not supported, please check the docs.")
 
     println(io, Comment_Line_1)
     println(io, Comment_Line_2)
 
     # Bus
-    for (_, bus) in sort(collect(data["bus"]), by=(x) -> x.second["index"])
+    for (_, bus) in sort(collect(data["bus"]), by = (x) -> x.second["index"])
         # Skip star-buses created by three-winding transformers from importing raw source files
         if bus["source_id"][1] == "transformer"
             continue
@@ -1097,7 +1112,7 @@ function export_pti(io::IO, data::Dict{String,Any})
     println(io, "0 / END OF BUS DATA, BEGIN LOAD DATA")
 
     # Load
-    for (_, load) in sort(collect(data["load"]), by=(x) -> x.second["index"])
+    for (_, load) in sort(collect(data["load"]), by = (x) -> x.second["index"])
         # Get bus number
         bus_i = load["load_bus"]
 
@@ -1105,7 +1120,7 @@ function export_pti(io::IO, data::Dict{String,Any})
         area = bus_area[bus_i]
         owner = bus_owner[bus_i]
         zone = bus_zone[bus_i]
-        
+
         # Get Dict in a PSSE way
         psse_comp = _pm2psse_load(load, area, owner, zone)
 
@@ -1116,13 +1131,13 @@ function export_pti(io::IO, data::Dict{String,Any})
     println(io, "0 / END OF LOAD DATA, BEGIN FIXED SHUNT DATA")
 
     # Fixed Shunt
-    for (_, shunt) in sort(collect(data["shunt"]), by=(x) -> x.second["index"])
+    for (_, shunt) in sort(collect(data["shunt"]), by = (x) -> x.second["index"])
         # Skip Switched Shunts
         type = haskey(shunt, "source_id") ? shunt["source_id"][1] : "fixed shunt"
         if type != "fixed shunt"
             continue
         end
-        
+
         # Get Dict in a PSSE way
         psse_comp = _pm2psse_fixed_shunt(shunt)
 
@@ -1133,7 +1148,7 @@ function export_pti(io::IO, data::Dict{String,Any})
     println(io, "0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA")
 
     # Generator
-    for (_, gen) in sort(collect(data["gen"]), by=(x) -> x.second["index"])
+    for (_, gen) in sort(collect(data["gen"]), by = (x) -> x.second["index"])
         # Get bus number
         bus_i = gen["gen_bus"]
 
@@ -1153,19 +1168,18 @@ function export_pti(io::IO, data::Dict{String,Any})
 
     # Branches
     transformers = Array{Tuple{Symbol, Any}, 1}()
-    for (_, branch) in sort(collect(data["branch"]), by=(x) -> x.second["index"])
+    for (_, branch) in sort(collect(data["branch"]), by = (x) -> x.second["index"])
         # Skip transformers and put it in transformers Array
         if branch["transformer"]
-
             if get(data, "source_type", "undefined") == "pti"
                 _, i, j, k, ckt, _ = branch["source_id"]
             else
-                k = 0 
+                k = 0
             end
 
             if k != 0 # Tree Winding
                 side = branch["f_bus"]
-            
+
                 if side == i
                     three_winding_tran[i, j, k, ckt]["w1"] = branch
                 elseif side == j
@@ -1177,7 +1191,7 @@ function export_pti(io::IO, data::Dict{String,Any})
                 windings = [
                     three_winding_tran[i, j, k, ckt]["w1"],
                     three_winding_tran[i, j, k, ckt]["w2"],
-                    three_winding_tran[i, j, k, ckt]["w3"],
+                    three_winding_tran[i, j, k, ckt]["w3"]
                 ]
 
                 # if 3w Transformer Dict is full 
@@ -1187,29 +1201,29 @@ function export_pti(io::IO, data::Dict{String,Any})
 
             else # Two Winding    
                 push!(transformers, (:W2, branch))
-            end            
+            end
 
         else
             # Get default owner
             bus_i = branch["f_bus"]
             owner = bus_owner[bus_i]
-            
+
             # Get Dict in a PSSE way
             psse_comp = _pm2psse_branch(branch, owner)
-            
+
             # Print it in the file
             _print_pti_str(io, psse_comp, _pti_dtypes["BRANCH"])
         end
     end
-    
+
     println(io, "0 / END OF BRANCH DATA, BEGIN TRANSFORMER DATA")
-    
+
     # Transformers
     line_names_2w = [
         "TRANSFORMER",
         "TRANSFORMER TWO-WINDING LINE 1",
         "TRANSFORMER TWO-WINDING LINE 2",
-        "TRANSFORMER TWO-WINDING LINE 3",
+        "TRANSFORMER TWO-WINDING LINE 3"
     ]
 
     line_names_3w = [
@@ -1217,9 +1231,9 @@ function export_pti(io::IO, data::Dict{String,Any})
         "TRANSFORMER THREE-WINDING LINE 1",
         "TRANSFORMER THREE-WINDING LINE 2",
         "TRANSFORMER THREE-WINDING LINE 3",
-        "TRANSFORMER THREE-WINDING LINE 4",
+        "TRANSFORMER THREE-WINDING LINE 4"
     ]
-    
+
     for (type, transformer) in transformers
         # Get default transformer base
         sbase = data["baseMVA"]
@@ -1228,7 +1242,7 @@ function export_pti(io::IO, data::Dict{String,Any})
             # Get default owner
             bus_i = transformer["f_bus"]
             owner = bus_owner[bus_i]
-                        
+
             # Get the source data
             source_type = get(data, "source_type", "undefined")
 
@@ -1238,20 +1252,19 @@ function export_pti(io::IO, data::Dict{String,Any})
             for (psse_part, line) in zip(psse_comp, line_names_2w)
                 _print_pti_str(io, psse_comp, _pti_dtypes[line])
             end
-            
-                
+
         elseif type == :W3
             # Get default owner
             bus_i = transformer["w1"]["f_bus"]
             owner = bus_owner[bus_i]
-            
+
             # Convert to Three winding transformer and print it
             psse_comp = _pm2psse_3w_tran(transformer, owner, sbase)
-            
+
             for (psse_part, line) in zip(psse_comp, line_names_3w)
                 _print_pti_str(io, psse_comp, _pti_dtypes[line])
             end
-            
+
         else
             @assert false # transformer type not defined.
         end
@@ -1260,18 +1273,19 @@ function export_pti(io::IO, data::Dict{String,Any})
     println(io, "0 / END OF TRANSFORMER DATA, BEGIN AREA DATA")
 
     # Area Interchange
-    if haskey(data, "area interchange") 
-        for (_, area) in sort(collect(data["area interchange"]), by=(x) -> x.second["index"])
+    if haskey(data, "area interchange")
+        for (_, area) in
+            sort(collect(data["area interchange"]), by = (x) -> x.second["index"])
             # Get Dict in a PSSE way and print it
             psse_comp = _pm2psse_area_interchange(area)
             _print_pti_str(io, psse_comp, _pti_dtypes["AREA INTERCHANGE"])
         end
     end
-    
+
     println(io, "0 / END OF AREA DATA, BEGIN TWO-TERMINAL DC DATA")
     # TODO : See how PM converts the DC line and do the oposite
     if haskey(data, "dcline")
-        for (_, dcline) in sort(collect(data["dcline"]), by=(x) -> x.second["index"])
+        for (_, dcline) in sort(collect(data["dcline"]), by = (x) -> x.second["index"])
             # Get AC buses from inverter and rectifier side
             r_bus = data["bus"]["$(dcline["f_bus"])"]
             i_bus = data["bus"]["$(dcline["t_bus"])"]
@@ -1297,20 +1311,20 @@ function export_pti(io::IO, data::Dict{String,Any})
                 _print_pti_str(io, psse_comp, line)
             end
             =#
-        end 
+        end
     end
 
-    println(io, "0 / END OF TWO-TERMINAL DC DATA, BEGIN VOLTAGE SOURCE CONVERTER DATA")    
+    println(io, "0 / END OF TWO-TERMINAL DC DATA, BEGIN VOLTAGE SOURCE CONVERTER DATA")
     # TODO : See how PM converts the DC line and do the oposite
 
-    println(io, "0 / END OF VOLTAGE SOURCE CONVERTER DATA, BEGIN IMPEDANCE CORRECTION DATA")   
+    println(io, "0 / END OF VOLTAGE SOURCE CONVERTER DATA, BEGIN IMPEDANCE CORRECTION DATA")
     println(io, "0 / END OF IMPEDANCE CORRECTION DATA, BEGIN MULTI-TERMINAL DC DATA")
     println(io, "0 / END OF MULTI-TERMINAL DC DATA, BEGIN MULTI-SECTION LINE DATA")
     println(io, "0 / END OF MULTI-SECTION LINE DATA, BEGIN ZONE DATA")
 
     # Zone Data
-    if haskey(data, "zone") 
-        for (_, zone) in sort(collect(data["zone"]), by=(x) -> x.second["index"])
+    if haskey(data, "zone")
+        for (_, zone) in sort(collect(data["zone"]), by = (x) -> x.second["index"])
             # Get Dict in a PSSE way and print it
             psse_comp = _pm2psse_zone(zone)
             _print_pti_str(io, psse_comp, _pti_dtypes["ZONE"])
@@ -1332,8 +1346,8 @@ function export_pti(io::IO, data::Dict{String,Any})
     println(io, "0 / END OF INTER-AREA TRANSFER DATA, BEGIN OWNER DATA")
 
     # Owner Data
-    if haskey(data, "owner") 
-        for (_, owner) in sort(collect(data["owner"]), by=(x) -> x.second["index"])
+    if haskey(data, "owner")
+        for (_, owner) in sort(collect(data["owner"]), by = (x) -> x.second["index"])
             # Get Dict in a PSSE way and print it
             psse_comp = _pm2psse_owner(owner)
             _print_pti_str(io, psse_comp, _pti_dtypes["OWNER"])
@@ -1344,13 +1358,13 @@ function export_pti(io::IO, data::Dict{String,Any})
     println(io, "0 / END OF FACTS CONTROL DEVICE DATA, BEGIN SWITCHED SHUNT DATA")
 
     # Switched Shunt
-    for (_, shunt) in sort(collect(data["shunt"]), by=(x) -> x.second["index"])
+    for (_, shunt) in sort(collect(data["shunt"]), by = (x) -> x.second["index"])
         # Skip Fixed Shunts
         type = haskey(shunt, "source_id") ? shunt["source_id"][1] : "fixed shunt"
         if type != "switched shunt"
             continue
         end
-        
+
         # Get Dict in a PSSE way
         psse_comp = _pm2psse_switched_shunt(shunt)
 
@@ -1363,8 +1377,9 @@ function export_pti(io::IO, data::Dict{String,Any})
     println(io, "Q")
 end
 
-
-"Given a PTI component dict print it in the .raw file"
+"""
+Given a PTI component dict print it in the .raw file
+"""
 function _print_pti_str(io::IO, component, _dtype)
     str = ""
     for (data, type) in _dtype
@@ -1378,11 +1393,11 @@ function _print_pti_str(io::IO, component, _dtype)
     println(io, str)
 end
 
-
 """
 Export remaining keys of a componet
 """
-function _export_remaining!(sub_data::Dict{String, Any}, pm_comp::Dict{String, Any}, pti_default::Dict{String, Any})
+function _export_remaining!(sub_data::Dict{String, Any}, pm_comp::Dict{String, Any},
+        pti_default::Dict{String, Any})
     # Try to get the value from the PM component (is in lower case), else use the default
     for (key, default) in pti_default
         if ! haskey(sub_data, key)
@@ -1390,7 +1405,6 @@ function _export_remaining!(sub_data::Dict{String, Any}, pm_comp::Dict{String, A
         end
     end
 end
-
 
 """
 Create a header for the case
@@ -1405,16 +1419,15 @@ function _pm2psse_header(pm::Dict{String, Any})
     return sub_data
 end
 
-
 """
 Parses PM Bus data to PSS(R)E-style.
 """
 function _pm2psse_bus(pm_bus::Dict{String, Any})
-    sub_data = Dict{String, Any}()         
+    sub_data = Dict{String, Any}()
     sub_data["I"] = pm_bus["index"]
     sub_data["NAME"] = "\'$(get(pm_bus, "name", _default_bus["NAME"]))\'"
     sub_data["BASKV"] = get(pm_bus, "base_kv", _default_bus["BASKV"])
-    sub_data["IDE"] =  get(pm_bus, "bus_type", _default_bus["IDE"])
+    sub_data["IDE"] = get(pm_bus, "bus_type", _default_bus["IDE"])
     sub_data["AREA"] = get(pm_bus, "area", _default_bus["AREA"])
     sub_data["ZONE"] = get(pm_bus, "zone", _default_bus["ZONE"])
     sub_data["OWNER"] = get(pm_bus, "owner", _default_bus["OWNER"])
@@ -1424,18 +1437,16 @@ function _pm2psse_bus(pm_bus::Dict{String, Any})
     sub_data["NVLO"] = get(pm_bus, "vmin", _default_bus["NVLO"])
 
     _export_remaining!(sub_data, pm_bus, _pti_defaults["BUS"])
-    
+
     return sub_data
 end
-
 
 """
 Parses PM Load data to PSS(R)E-style.
 """
 function _pm2psse_load(pm_load::Dict{String, Any}, area::Int, owner::Int, zone::Int)
-    
     sub_data = Dict{String, Any}()
-    sub_data["I"] = pm_load["load_bus"] 
+    sub_data["I"] = pm_load["load_bus"]
     id = haskey(pm_load, "source_id") ? pm_load["source_id"][end] : _default_load["ID"]
     sub_data["ID"] = "\'$(id)\'" # CHECK WITH MULTIPLES LOADS IN ONE BUS
     sub_data["STATUS"] = get(pm_load, "status", _default_load["STATUS"])
@@ -1450,28 +1461,27 @@ function _pm2psse_load(pm_load::Dict{String, Any}, area::Int, owner::Int, zone::
     return sub_data
 end
 
-
 """
 Parses PM fixed shunt to PSS(R)E-style
 """
 function _pm2psse_fixed_shunt(pm_shunt::Dict{String, Any})
     sub_data = Dict{String, Any}()
     sub_data["I"] = pm_shunt["shunt_bus"] # Not defaul allowed
-    id = haskey(pm_shunt, "source_id") ? pm_shunt["source_id"][end] : _default_fixed_shunt["ID"]
+    id = haskey(pm_shunt, "source_id") ? pm_shunt["source_id"][end] :
+         _default_fixed_shunt["ID"]
     sub_data["ID"] = "\'$(id)\'"
     sub_data["GL"] = get(pm_shunt, "gs", _default_fixed_shunt["GL"])
     sub_data["BL"] = get(pm_shunt, "bs", _default_fixed_shunt["BL"])
-    
-    _export_remaining!(sub_data, pm_shunt, _pti_defaults["FIXED SHUNT"])
-    
-    return sub_data
-end 
 
+    _export_remaining!(sub_data, pm_shunt, _pti_defaults["FIXED SHUNT"])
+
+    return sub_data
+end
 
 """
 Parses PM generator data to PSS(R)E-style.
 """
-function _pm2psse_generator(pm_gen::Dict{String, Any},area::Int, owner::Int, zone::Int)
+function _pm2psse_generator(pm_gen::Dict{String, Any}, area::Int, owner::Int, zone::Int)
     sub_data = Dict{String, Any}()
     sub_data["I"] = pm_gen["gen_bus"] # Not default allowed
     id = haskey(pm_gen, "source_id") ? pm_gen["source_id"][end] : _default_generator["ID"]
@@ -1489,12 +1499,11 @@ function _pm2psse_generator(pm_gen::Dict{String, Any},area::Int, owner::Int, zon
     sub_data["OWNER"] = get(pm_gen, "owner", owner)
     sub_data["ZONE"] = get(pm_gen, "zone", zone)
     sub_data["O1"] = get(pm_gen, "o1", owner)
-    
+
     _export_remaining!(sub_data, pm_gen, _pti_defaults["GENERATOR"])
-    
+
     return sub_data
 end
-
 
 """
 Parses PM branch data to PSS(R) E-style.
@@ -1523,7 +1532,6 @@ function _pm2psse_branch(pm_br::Dict{String, Any}, owner::Int)
     return sub_data
 end
 
-
 """
 Parses PM transformer branch to PSS(R) E-style.
 returns a dict with all the keys
@@ -1531,66 +1539,64 @@ later pass this dict to _print_pti_str with differents _transformer_dtypes
 
 Reference: PSSE 33 - POM - 5-20
 """
-function _pm2psse_2w_tran(pm_br::Dict{String, Any}, owner::Int, sbase::Real, source="pti")
-
+function _pm2psse_2w_tran(pm_br::Dict{String, Any}, owner::Int, sbase::Real, source = "pti")
     sub_data = Dict{String, Any}()
-    
+
     # TRANSFORMER FIRST LINE PARAMETERS
     sub_data["I"] = pm_br["f_bus"]
     sub_data["J"] = pm_br["t_bus"]
     sub_data["K"] = 0
     if haskey(pm_br, "source_id")
-        ckt = source == "pti" ? "\'$(pm_br["source_id"][5])\'" : "\'$(pm_br["source_id"][end])\'"
+        ckt = source == "pti" ? "\'$(pm_br["source_id"][5])\'" :
+              "\'$(pm_br["source_id"][end])\'"
     else
         ckt = _default_transformer("CKT")
     end
     sub_data["CKT"] = ckt
     sub_data["CW"] = _default_transformer["CW"]
-    sub_data["CZ"] =  _default_transformer["CZ"]
+    sub_data["CZ"] = _default_transformer["CZ"]
     sub_data["CM"] = _default_transformer["CM"]
     sub_data["MAG1"] = pm_br["g_fr"] + pm_br["g_to"]
     sub_data["MAG2"] = pm_br["b_fr"] + pm_br["b_to"]
     sub_data["NAME"] = "\'$(get(pm_br, "name", _default_transformer["NAME"]))\'"
     sub_data["STAT"] = get(pm_br, "br_status", _default_transformer["STAT"])
     sub_data["O1"] = get(pm_br, "o1", owner)
-    
+
     # TRANSFORMER SECOND LINE PARAMETERS
     sub_data["R1-2"] = pm_br["br_r"]
     sub_data["X1-2"] = pm_br["br_x"]
     sub_data["SBASE1-2"] = get(pm_br, "SBASE1-2", sbase)
-    
+
     # TRANSFORMER WINDING ONE
     sub_data["WINDV1"] = pm_br["tap"]
     sub_data["ANG1"] = get(pm_br, "shift", _default_transformer["ANG1"])
     sub_data["RATA1"] = get(pm_br, "rate_a", _default_transformer["RATA1"])
     sub_data["RATB1"] = get(pm_br, "rate_b", _default_transformer["RATB1"])
     sub_data["RATC1"] = get(pm_br, "rate_c", _default_transformer["RATC1"])
-    
+
     # TRANSFORMER WINDING TWO
     sub_data["WINDV2"] = get(pm_br, "windv2", 1.0)
-    
+
     # Defaults
     _export_remaining!(sub_data, pm_br, _pti_defaults["TRANSFORMER"])
-    
-    return sub_data    
-end
 
+    return sub_data
+end
 
 """
 Parses 3 PM transformer branch to PSS(R) E-style.
 """
 function _pm2psse_3w_tran(pm_tr::Dict{String, Any}, owner::Int, sbase::Float64)
-    
     sub_data = Dict{String, Any}()
-    
-    bus = pm_tr["bus"]  
+
+    bus = pm_tr["bus"]
     w1 = pm_tr["w1"]
     w2 = pm_tr["w2"]
     w3 = pm_tr["w3"]
-    
+
     # TRANSFORMER FIRST LINE PARAMETERS
-    sub_data["I"] = w1["f_bus"] 
-    sub_data["J"] = w2["f_bus"] 
+    sub_data["I"] = w1["f_bus"]
+    sub_data["J"] = w2["f_bus"]
     sub_data["K"] = w3["f_bus"]
     ckt = haskey(bus, "source_id") ? bus["source_id"][end] : _default_branch["CKT"]
     sub_data["CKT"] = "\'$(ckt)\'"
@@ -1600,7 +1606,7 @@ function _pm2psse_3w_tran(pm_tr::Dict{String, Any}, owner::Int, sbase::Float64)
     sub_data["MAG1"] = get(w1, "g_fr", _default_transformer["MAG1"])
     sub_data["MAG2"] = get(w1, "b_fr", _default_transformer["MAG2"])
     sub_data["NAME"] = "\'$(get(w1, "name", _default_transformer["NAME"]))\'"
-    
+
     w1_stat = Bool(w1["br_status"])
     w2_stat = Bool(w2["br_status"])
     w3_stat = Bool(w3["br_status"])
@@ -1616,9 +1622,9 @@ function _pm2psse_3w_tran(pm_tr::Dict{String, Any}, owner::Int, sbase::Float64)
     else
         sub_data["STAT"] = 0
     end
-    
+
     sub_data["O1"] = get(w1, "o1", owner)
-    
+
     # TRANSFORMER SECOND LINE PARAMETERS
     sub_data["R1-2"] = w1["br_r"] + w2["br_r"]
     sub_data["X1-2"] = w1["br_x"] + w2["br_x"]
@@ -1631,10 +1637,10 @@ function _pm2psse_3w_tran(pm_tr::Dict{String, Any}, owner::Int, sbase::Float64)
     sub_data["R3-1"] = w3["br_r"] + w1["br_r"]
     sub_data["X3-1"] = w3["br_x"] + w1["br_x"]
     sub_data["SBASE3-1"] = get(w1, "SBASE3-1", sbase)
-    
+
     sub_data["VMSTAR"] = get(bus, "vm", _default_transformer["VMSTAR"])
     sub_data["ANSTAR"] = get(bus, "va", _default_transformer["VMSTAR"])
-    
+
     # TRANSFORMER WINDINGS
     for (m, w) in enumerate([w1, w2, w3])
         sub_data["WINDV$m"] = w["tap"]
@@ -1643,16 +1649,15 @@ function _pm2psse_3w_tran(pm_tr::Dict{String, Any}, owner::Int, sbase::Float64)
         sub_data["RATB$m"] = get(w, "rate_b", _default_transformer["RATB$m"])
         sub_data["RATC$m"] = get(w, "rate_c", _default_transformer["RATC$m"])
     end
-    
+
     # Defaults
     _export_remaining!(sub_data, bus, _pti_defaults["TRANSFORMER"])
     _export_remaining!(sub_data, w1, _pti_defaults["TRANSFORMER"])
     _export_remaining!(sub_data, w2, _pti_defaults["TRANSFORMER"])
     _export_remaining!(sub_data, w3, _pti_defaults["TRANSFORMER"])
-    
+
     return sub_data
 end
-
 
 """
 Parses PM area interchange to PSS(R) E-style
@@ -1661,19 +1666,20 @@ function _pm2psse_area_interchange(area::Dict{String, Any})
     sub_data = Dict{String, Any}()
     sub_data["I"] = area["i"]
     sub_data["ARNAME"] = "\'$(get(area, "arname", _default_area_interchange["ARNAME"]))\'"
-    
+
     _export_remaining!(sub_data, area, _pti_defaults["AREA INTERCHANGE"])
-    
+
     return sub_data
 end
 
 """
 Parses PM dcline to PSS(R)E style
 """
-function _pm2psse_tt_dc_line(pm_dcline::Dict{String, Any}, r_bus::Dict{String, Any}, i_bus::Dict{String, Any})
+function _pm2psse_tt_dc_line(pm_dcline::Dict{String, Any}, r_bus::Dict{String, Any}, i_bus::Dict{
+        String, Any})
     sub_data = Dict{String, Any}()
     name = pm_dcline["source_id"][end]
-    sub_data["NAME"] =  "\'$name\'"
+    sub_data["NAME"] = "\'$name\'"
     sub_data["MDC"] = pm_dcline["br_status"] == 1 ? 1 : 0 # Only power mode
     sub_data["RDC"] = get(pm_dcline, "rdc", 1) # No default allowed - needs a warning 
     sub_data["SETVL"] = get(pm_dcline, "setvl", pm_dcline["pf"])
@@ -1693,12 +1699,12 @@ function _pm2psse_tt_dc_line(pm_dcline::Dict{String, Any}, r_bus::Dict{String, A
     sub_data["ANMNI"] = get(pm_dcline, "anmni", 0)
     sub_data["RCI"] = get(pm_dcline, "rci", 0)
     sub_data["XCI"] = get(pm_dcline, "xci", 0)
-    sub_data["EBASI"] = get(pm_dcline, "ebasi", i_bus["base_kv"]) 
+    sub_data["EBASI"] = get(pm_dcline, "ebasi", i_bus["base_kv"])
     idi = get(pm_dcline, "idi", _pti_defaults["TWO-TERMINAL DC"]["IDI"])
     sub_data["IDI"] = "\'$idi\'"
 
     _export_remaining!(sub_data, pm_dcline, _pti_defaults["TWO-TERMINAL DC"])
-    
+
     return sub_data
 end
 
@@ -1713,10 +1719,9 @@ function _pm2psse_switched_shunt(pm_shunt::Dict{String, Any})
     sub_data["RMIDNT"] = "\'$(get(pm_shunt, "rmidnt", _default_switched_shunt["RMIDNT"]))\'"
 
     _export_remaining!(sub_data, pm_shunt, _pti_defaults["SWITCHED SHUNT"])
-    
+
     return sub_data
 end
-
 
 """
 Parses PM zone to PSS(R) E-style
@@ -1725,10 +1730,9 @@ function _pm2psse_zone(zone::Dict{String, Any})
     sub_data = Dict{String, Any}()
     sub_data["I"] = zone["index"]
     sub_data["ZONAME"] = "\'$(get(zone, "zoname", _default_zone["ZONAME"]))\'"
-    
+
     return sub_data
 end
-
 
 """
 Parses PM interarea to PSS(R) E-style
@@ -1737,12 +1741,11 @@ function _pm2psse_interarea(interarea::Dict{String, Any})
     sub_data = Dict{String, Any}()
     sub_data["ARFROM"] = interarea["arfrom"]
     sub_data["ARTO"] = interarea["arto"]
-    
+
     _export_remaining!(sub_data, interarea, _pti_defaults["INTER-AREA TRANSFER"])
-    
+
     return sub_data
 end
-
 
 """
 Parses PM zone to PSS(R) E-style

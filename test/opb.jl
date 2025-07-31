@@ -1,5 +1,4 @@
 
-
 @testset "test nfa opb" begin
     @testset "3-bus case" begin
         result = run_opb("../test/data/matpower/case3.m", NFAPowerModel, nlp_solver)
@@ -69,7 +68,6 @@
     end
 end
 
-
 @testset "test dcp opb" begin
     @testset "3-bus case" begin
         result = run_opb("../test/data/matpower/case3.m", DCPPowerModel, nlp_solver)
@@ -96,7 +94,6 @@ end
         @test isapprox(result["objective"], 61001.2; atol = 1e0)
     end
 end
-
 
 @testset "test soc wr opb" begin
     @testset "3-bus case" begin

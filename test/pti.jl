@@ -8,13 +8,17 @@ TESTLOG = Memento.getlogger(PowerModels)
 
         @test_nowarn PowerModels.parse_pti("../test/data/pti/parser_test_a.raw")
         # @test_throws(TESTLOG, ErrorException, PowerModels.parse_pti("../test/data/pti/parser_test_b.raw"))
-        @test_warn(TESTLOG, "Version 32 of PTI format is unsupported, parser may not function correctly.",
-                   PowerModels.parse_pti("../test/data/pti/parser_test_c.raw"))
-        @test_warn(TESTLOG, "At line 4, new section started with '0', but additional non-comment data is present. Pattern '^\\s*0\\s*[/]*.*' is reserved for section start/end.",
-                    PowerModels.parse_pti("../test/data/pti/parser_test_c.raw"))
+        @test_warn(TESTLOG,
+            "Version 32 of PTI format is unsupported, parser may not function correctly.",
+            PowerModels.parse_pti("../test/data/pti/parser_test_c.raw"))
+        @test_warn(TESTLOG,
+            "At line 4, new section started with '0', but additional non-comment data is present. Pattern '^\\s*0\\s*[/]*.*' is reserved for section start/end.",
+            PowerModels.parse_pti("../test/data/pti/parser_test_c.raw"))
         #@test_throws(TESTLOG, ErrorException, PowerModels.parse_pti("../test/data/pti/parser_test_d.raw"))
-        @test_warn(TESTLOG, "GNE DEVICE parsing is not supported.", PowerModels.parse_pti("../test/data/pti/parser_test_h.raw"))
-        @test_throws(TESTLOG, ErrorException, PowerModels.parse_pti("../test/data/pti/parser_test_j.raw"))
+        @test_warn(TESTLOG, "GNE DEVICE parsing is not supported.",
+            PowerModels.parse_pti("../test/data/pti/parser_test_h.raw"))
+        @test_throws(TESTLOG, ErrorException,
+            PowerModels.parse_pti("../test/data/pti/parser_test_j.raw"))
 
         Memento.setlevel!(TESTLOG, "error")
     end
@@ -22,8 +26,10 @@ TESTLOG = Memento.getlogger(PowerModels)
     @testset "Check PSSE exception handling" begin
         Memento.setlevel!(TESTLOG, "warn")
 
-        @test_throws(TESTLOG, Exception, PowerModels.parse_psse("../test/data/pti/parser_test_b.raw"))
-        @test_throws(TESTLOG, Exception, PowerModels.parse_psse("../test/data/pti/parser_test_d.raw"))
+        @test_throws(TESTLOG, Exception,
+            PowerModels.parse_psse("../test/data/pti/parser_test_b.raw"))
+        @test_throws(TESTLOG, Exception,
+            PowerModels.parse_psse("../test/data/pti/parser_test_d.raw"))
 
         Memento.setlevel!(TESTLOG, "error")
     end
@@ -165,11 +171,11 @@ TESTLOG = Memento.getlogger(PowerModels)
 
         data_dict = PowerModels.parse_pti("../test/data/pti/parser_test_g.raw")
         @test length(data_dict["MULTI-TERMINAL DC"][1]) == 8
-
     end
 
     @testset "0-bus case file" begin
-        @test_throws(TESTLOG, ErrorException, PowerModels.parse_pti("../test/data/pti/case0.raw"))
+        @test_throws(TESTLOG, ErrorException,
+            PowerModels.parse_pti("../test/data/pti/case0.raw"))
     end
 
     @testset "73-bus case file" begin
@@ -219,27 +225,79 @@ TESTLOG = Memento.getlogger(PowerModels)
     end
 
     @testset "default values in PTI files" begin
-        pti = Dict{String,Array}("CASE IDENTIFICATION" => [Dict{String,Any}("IC" => 0, "SBASE" => 100.0, "REV" => 33, "XFRRAT" => 0, "NXFRAT" => 0, "BASFRQ" => 60, "Comment_Line_1" => "default values test", "Comment_Line_2" => "", "NAME" => "parser_test_defaults")],
-                                 "BUS" => [Dict{String,Any}("I" => 1, "NAME" => "            ", "BASKV" => 0.0, "IDE" => 1, "AREA" => 1, "ZONE" => 1, "OWNER" => 1, "VM" => 1.0, "VA" => 0.0, "NVHI" => 1.1, "NVLO" => 0.9, "EVHI" => 1.1, "EVLO" => 0.9)],
-                                 "LOAD" => [Dict{String,Any}("I" => 1, "ID" => 1, "STATUS" => 1, "AREA" => 1, "ZONE" => 1, "PL" => 0.0, "QL" => 0.0, "IP" => 0.0, "IQ" => 0.0, "YP" => 0.0, "YQ" => 0.0, "OWNER" => 1, "SCALE" => 1, "INTRPT" => 0)],
-                                 "FIXED SHUNT" => [Dict{String,Any}("I" => 1, "ID" => 1, "STATUS" => 1, "GL" => 0.0, "BL" => 0.0)],
-                                 "GENERATOR" => [Dict{String,Any}("I" => 1, "ID" => 1, "PG" => 0.0, "QG" => 0.0, "QT" => 9999.0, "QB" => -9999.0, "VS" => 1.0, "IREG" => 0, "MBASE" => 100.0, "ZR" => 0.0, "ZX" => 1.0, "RT" => 0.0, "XT" => 0.0, "GTAP" => 1.0, "STAT" => 1, "RMPCT" => 100.0, "PT" => 9999.0, "PB" => -9999.0, "O1" => 1, "F1" => 1.0, "O2" => 0, "F2" => 1.0, "O3" => 0, "F3" => 1.0, "O4" => 0, "F4" => 1.0, "WMOD" => 0, "WPF" => 1.0)],
-                                 "BRANCH" => [Dict{String,Any}("I" => 1, "J" => 2, "CKT" => 1, "R" => 0.1, "X" => 0.1, "B" => 0.0, "RATEA" => 0.0, "RATEB" => 0.0, "RATEC" => 0.0, "GI" => 0.0, "BI" => 0.0, "BJ" => 0.0, "GJ" => 0.0, "ST" => 1, "MET" => 1, "LEN" => 0.0, "O1" => 1, "F1" => 1.0, "O2" => 0, "F2" => 1.0, "O3" => 0, "F3" => 1.0, "O4" => 0, "F4" => 1.0)],
-                                 "TRANSFORMER" => [Dict{String,Any}()],
-                                 "AREA INTERCHANGE" => [Dict{String,Any}("I" => 1, "ISW" => 0, "PDES" => 0.0, "PTOL" => 10.0, "ARNAME" => "            ")],
-                                 "TWO-TERMINAL DC" => [Dict{String,Any}()],
-                                 "VOLTAGE SOURCE CONVERTER" => [Dict{String,Any}()],
-                                 "IMPEDANCE CORRECTION" => [Dict{String,Any}("I" => 1, "T1" => 0.0, "F1" => 0.0, "T2" => 0.0, "F2" => 0.0, "T3" => 0.0, "F3" => 0.0, "T4" => 0.0, "F4" => 0.0, "T5" => 0.0, "F5" => 0.0, "T6" => 0.0, "F6" => 0.0, "T7" => 0.0, "F7" => 0.0, "T8" => 0.0, "F8" => 0.0, "T9" => 0.0, "F9" => 0.0, "T10" => 0.0, "F10" => 0.0, "T11" => 0.0, "F11" => 0.0)],
-                                 "MULTI-TERMINAL DC" => [Dict{String,Any}("NAME" => "MULTI-TERM", "NCONV" => 1, "NDCBS" => 1, "NDCLN" => 1, "MDC" => 0, "VCONV"  => 1, "VCMOD" => 0.0, "VCONVN" => 0,
-                                                                          "CONV" => [Dict{String,Any}("IB" => 2, "N" => 1, "ANGMX" => 9.0, "ANGMN" => 5.0, "RC" => 1.0, "XC" => 1.0, "EBAS" => 1.0, "TR" => 1.0, "TAP" => 1.0, "TPMX" => 1.5, "TPMN" => 0.51, "TSTP" => 0.00625, "SETVL" => 1, "DCPF" => 1, "MARG" => 0.0, "CNVCOD" => 1)],
-                                                                          "DCBS" => [Dict{String,Any}("IDC" => 3, "IB" => 0, "AREA" => 1, "ZONE" => 1, "DCNAME" => "            ", "IDC2" => 0, "RGRND" => 0.0, "OWNER" => 1)],
-                                                                          "DCLN" => [Dict{String,Any}("IDC" => 1, "JDC" => 2, "DCCKT" => 1, "MET" => 1, "RDC" => 1.0, "LDC" => 1.0)])],
-                                 "MULTI-SECTION LINE" => [Dict{String,Any}("I" => 1, "J" => 2, "ID" => "&1", "MET" => 1, "DUM1" => 1, "DUM2" => "", "DUM3" => "", "DUM4" => "", "DUM5" => "", "DUM6" => "", "DUM7" => "", "DUM8" => "", "DUM9" => "")],
-                                 "ZONE" => [Dict{String,Any}("I" => 1, "ZONAME" => "            ")],
-                                 "INTER-AREA TRANSFER" => [Dict{String,Any}("ARFROM" => 1, "ARTO" => 2, "TRID" => 1, "PTRAN" => 0.0)],
-                                 "OWNER" => [Dict{String,Any}("I" => 1, "OWNAME" => "            ")],
-                                 "FACTS CONTROL DEVICE" => [Dict{String,Any}("NAME" => "FACTS", "I" => 1, "J" => 0, "MODE" => 1, "PDES" => 0.0, "QDES" => 0.0, "VSET" => 1.0, "SHMX" => 9999.0, "TRMX" => 9999.0, "VTMN" => 0.9, "VTMX" => 1.1, "VSMX" => 1.0, "IMX" => 0.0, "LINX" => 0.05, "RMPCT" => 100.0, "OWNER" => 1, "SET1" => 0.0, "SET2" => 0.0, "VSREF" => 0, "REMOT" => 0, "MNAME" => "")],
-                                 "SWITCHED SHUNT" => [Dict{String,Any}("I" => 1, "MODSW" => 1, "ADJM" => 0, "STAT" => 1, "VSWHI" => 1.0, "VSWLO" => 1.0, "SWREM" => 0, "RMPCT" => 100.0, "RMIDNT" => "", "BINIT" => 0.0, "N1" => 0.0, "B1" => 0.0, "N2" => 0.0, "B2" => 0.0, "N3" => 0.0, "B3" => 0.0, "N4" => 0.0, "B4" => 0.0, "N5" => 0.0, "B5" => 0.0, "N6" => 0.0, "B6" => 0.0, "N7" => 0.0, "B7" => 0.0, "N8" => 0.0, "B8" => 0.0)])
+        pti = Dict{String, Array}(
+            "CASE IDENTIFICATION" => [Dict{String, Any}(
+                "IC" => 0, "SBASE" => 100.0, "REV" => 33, "XFRRAT" => 0, "NXFRAT" => 0,
+                "BASFRQ" => 60, "Comment_Line_1" => "default values test",
+                "Comment_Line_2" => "", "NAME" => "parser_test_defaults")],
+            "BUS" => [Dict{String, Any}(
+                "I" => 1, "NAME" => "            ", "BASKV" => 0.0, "IDE" => 1,
+                "AREA" => 1, "ZONE" => 1, "OWNER" => 1, "VM" => 1.0, "VA" => 0.0,
+                "NVHI" => 1.1, "NVLO" => 0.9, "EVHI" => 1.1, "EVLO" => 0.9)],
+            "LOAD" => [Dict{String, Any}(
+                "I" => 1, "ID" => 1, "STATUS" => 1, "AREA" => 1, "ZONE" => 1,
+                "PL" => 0.0, "QL" => 0.0, "IP" => 0.0, "IQ" => 0.0, "YP" => 0.0,
+                "YQ" => 0.0, "OWNER" => 1, "SCALE" => 1, "INTRPT" => 0)],
+            "FIXED SHUNT" => [Dict{String, Any}(
+                "I" => 1, "ID" => 1, "STATUS" => 1, "GL" => 0.0, "BL" => 0.0)],
+            "GENERATOR" => [Dict{String, Any}(
+                "I" => 1, "ID" => 1, "PG" => 0.0, "QG" => 0.0, "QT" => 9999.0,
+                "QB" => -9999.0, "VS" => 1.0, "IREG" => 0, "MBASE" => 100.0,
+                "ZR" => 0.0, "ZX" => 1.0, "RT" => 0.0, "XT" => 0.0, "GTAP" => 1.0,
+                "STAT" => 1, "RMPCT" => 100.0, "PT" => 9999.0, "PB" => -9999.0,
+                "O1" => 1, "F1" => 1.0, "O2" => 0, "F2" => 1.0, "O3" => 0,
+                "F3" => 1.0, "O4" => 0, "F4" => 1.0, "WMOD" => 0, "WPF" => 1.0)],
+            "BRANCH" => [Dict{String, Any}(
+                "I" => 1, "J" => 2, "CKT" => 1, "R" => 0.1, "X" => 0.1,
+                "B" => 0.0, "RATEA" => 0.0, "RATEB" => 0.0, "RATEC" => 0.0,
+                "GI" => 0.0, "BI" => 0.0, "BJ" => 0.0, "GJ" => 0.0, "ST" => 1,
+                "MET" => 1, "LEN" => 0.0, "O1" => 1, "F1" => 1.0, "O2" => 0,
+                "F2" => 1.0, "O3" => 0, "F3" => 1.0, "O4" => 0, "F4" => 1.0)],
+            "TRANSFORMER" => [Dict{String, Any}()],
+            "AREA INTERCHANGE" => [Dict{String, Any}("I" => 1, "ISW" => 0, "PDES" => 0.0,
+                "PTOL" => 10.0, "ARNAME" => "            ")],
+            "TWO-TERMINAL DC" => [Dict{String, Any}()],
+            "VOLTAGE SOURCE CONVERTER" => [Dict{String, Any}()],
+            "IMPEDANCE CORRECTION" => [Dict{String, Any}(
+                "I" => 1, "T1" => 0.0, "F1" => 0.0, "T2" => 0.0, "F2" => 0.0,
+                "T3" => 0.0, "F3" => 0.0, "T4" => 0.0, "F4" => 0.0,
+                "T5" => 0.0, "F5" => 0.0, "T6" => 0.0, "F6" => 0.0, "T7" => 0.0,
+                "F7" => 0.0, "T8" => 0.0, "F8" => 0.0, "T9" => 0.0, "F9" => 0.0,
+                "T10" => 0.0, "F10" => 0.0, "T11" => 0.0, "F11" => 0.0)],
+            "MULTI-TERMINAL DC" => [Dict{String, Any}(
+                "NAME" => "MULTI-TERM", "NCONV" => 1, "NDCBS" => 1, "NDCLN" => 1,
+                "MDC" => 0, "VCONV" => 1, "VCMOD" => 0.0, "VCONVN" => 0,
+                "CONV" => [Dict{String, Any}(
+                    "IB" => 2, "N" => 1, "ANGMX" => 9.0, "ANGMN" => 5.0,
+                    "RC" => 1.0, "XC" => 1.0, "EBAS" => 1.0, "TR" => 1.0,
+                    "TAP" => 1.0, "TPMX" => 1.5, "TPMN" => 0.51, "TSTP" => 0.00625,
+                    "SETVL" => 1, "DCPF" => 1, "MARG" => 0.0, "CNVCOD" => 1)],
+                "DCBS" => [Dict{String, Any}("IDC" => 3, "IB" => 0, "AREA" => 1,
+                    "ZONE" => 1, "DCNAME" => "            ",
+                    "IDC2" => 0, "RGRND" => 0.0, "OWNER" => 1)],
+                "DCLN" => [Dict{String, Any}("IDC" => 1, "JDC" => 2, "DCCKT" => 1,
+                    "MET" => 1, "RDC" => 1.0, "LDC" => 1.0)])],
+            "MULTI-SECTION LINE" => [Dict{String, Any}(
+                "I" => 1, "J" => 2, "ID" => "&1", "MET" => 1, "DUM1" => 1,
+                "DUM2" => "", "DUM3" => "", "DUM4" => "", "DUM5" => "",
+                "DUM6" => "", "DUM7" => "", "DUM8" => "", "DUM9" => "")],
+            "ZONE" => [Dict{String, Any}("I" => 1, "ZONAME" => "            ")],
+            "INTER-AREA TRANSFER" => [Dict{String, Any}(
+                "ARFROM" => 1, "ARTO" => 2, "TRID" => 1, "PTRAN" => 0.0)],
+            "OWNER" => [Dict{String, Any}("I" => 1, "OWNAME" => "            ")],
+            "FACTS CONTROL DEVICE" => [Dict{String, Any}(
+                "NAME" => "FACTS", "I" => 1, "J" => 0, "MODE" => 1, "PDES" => 0.0,
+                "QDES" => 0.0, "VSET" => 1.0, "SHMX" => 9999.0, "TRMX" => 9999.0,
+                "VTMN" => 0.9, "VTMX" => 1.1, "VSMX" => 1.0, "IMX" => 0.0,
+                "LINX" => 0.05, "RMPCT" => 100.0, "OWNER" => 1, "SET1" => 0.0,
+                "SET2" => 0.0, "VSREF" => 0, "REMOT" => 0, "MNAME" => "")],
+            "SWITCHED SHUNT" => [Dict{String, Any}(
+                "I" => 1, "MODSW" => 1, "ADJM" => 0, "STAT" => 1, "VSWHI" => 1.0,
+                "VSWLO" => 1.0, "SWREM" => 0, "RMPCT" => 100.0, "RMIDNT" => "",
+                "BINIT" => 0.0, "N1" => 0.0, "B1" => 0.0, "N2" => 0.0,
+                "B2" => 0.0, "N3" => 0.0, "B3" => 0.0, "N4" => 0.0,
+                "B4" => 0.0, "N5" => 0.0, "B5" => 0.0, "N6" => 0.0, "B6" => 0.0,
+                "N7" => 0.0, "B7" => 0.0, "N8" => 0.0, "B8" => 0.0)])
 
         parsed_pti = PowerModels.parse_pti("../test/data/pti/parser_test_defaults.raw")
 
@@ -247,9 +305,7 @@ TESTLOG = Memento.getlogger(PowerModels)
     end
 end
 
-
 @testset "test idempotent pti export" begin
-
     function test_pti_idempotent(filename::AbstractString; kwargs...)
         source_data = PowerModels.parse_file(filename; kwargs...)
 
@@ -330,9 +386,9 @@ end
     # Needs import all flag to replicate the dc lines
     @testset "test TT HVDC" begin
         file = "../test/data/pti/two-terminal-hvdc_test.raw"
-        test_pti_idempotent(file, import_all=true)
+        test_pti_idempotent(file, import_all = true)
     end
-    
+
     # Only fails in qminf/qmaxf because it lost amnr amni values in the export function.
     # @testset "test TT HVDC 3" begin
     #     file = "../test/data/pti/two-terminal-hvdc_test.raw"
@@ -341,17 +397,16 @@ end
 end
 
 @testset "test HVDC Power Flow" begin
-
     function compare_pf(filename::String)
         source_data = parse_file(filename)
         source_solution = PowerModels.run_pf(source_data, ACPPowerModel, nlp_solver)["solution"]
-        
+
         file_tmp = "../test/data/tmp.raw"
         PowerModels.export_pti(file_tmp, source_data)
         destination_data = parse_file(file_tmp)
         destination_solution = PowerModels.run_pf(destination_data, ACPPowerModel, nlp_solver)["solution"]
         rm(file_tmp)
-        
+
         @test InfrastructureModels.compare_dict(source_solution, destination_solution)
     end
 
@@ -359,7 +414,7 @@ end
         file = "../test/data/pti/two-terminal-hvdc_test.raw"
         compare_pf(file)
     end
-    
+
     # Fails because missing info to recreate the exact DCLINE (loss1)
     # @testset "HVDC MAT" begin
     #     file = "../test/data/matpower/case5_dc.m"
@@ -367,16 +422,14 @@ end
     # end
 end
 
-
 @testset "test export all to pti" begin
-
     function test_pti_export_all(filename::AbstractString)
-        source_data = parse_file(filename, import_all=true)
+        source_data = parse_file(filename, import_all = true)
 
         file_tmp = "../test/data/tmp.raw"
         PowerModels.export_pti(file_tmp, source_data)
 
-        destination_data = PowerModels.parse_file(file_tmp, import_all=true)
+        destination_data = PowerModels.parse_file(file_tmp, import_all = true)
         rm(file_tmp)
 
         # Delete "name" key
