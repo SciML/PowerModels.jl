@@ -32,8 +32,8 @@ makedocs(
             "File IO" => "parser.md"
         ],
         "Developer" => [
-                "Developer" => "developer.md",
-                "Formulation Details" => "formulation-details.md"
+            "Developer" => "developer.md",
+            "Formulation Details" => "formulation-details.md"
         ],
         "Experiment Results" => "experiment-results.md"
     ]

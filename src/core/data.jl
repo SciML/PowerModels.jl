@@ -1,20 +1,23 @@
 # tools for working with a PowerModels data dict structure
 import LinearAlgebra: pinv
 
-"PowerModels wrapper for the InfrastructureModels `apply!` function."
+"""
+PowerModels wrapper for the InfrastructureModels `apply!` function.
+"""
 function apply_pm!(func!::Function, data::Dict{String, <:Any}; apply_to_subnetworks::Bool = true)
     _IM.apply!(func!, data, pm_it_name; apply_to_subnetworks = apply_to_subnetworks)
 end
 
-
-"Convenience function for retrieving the power-only portion of network data."
+"""
+Convenience function for retrieving the power-only portion of network data.
+"""
 function get_pm_data(data::Dict{String, <:Any})
     return _IM.ismultiinfrastructure(data) ? data["it"][pm_it_name] : data
 end
 
-
-""
-function calc_branch_t(branch::Dict{String,<:Any})
+"""
+"""
+function calc_branch_t(branch::Dict{String, <:Any})
     tap_ratio = branch["tap"]
     angle_shift = branch["shift"]
 
@@ -24,17 +27,17 @@ function calc_branch_t(branch::Dict{String,<:Any})
     return tr, ti
 end
 
-
-""
-function calc_branch_y(branch::Dict{String,<:Any})
+"""
+"""
+function calc_branch_y(branch::Dict{String, <:Any})
     y = pinv(branch["br_r"] + im * branch["br_x"])
     g, b = real(y), imag(y)
     return g, b
 end
 
-
-""
-function calc_theta_delta_bounds(data::Dict{String,<:Any})
+"""
+"""
+function calc_theta_delta_bounds(data::Dict{String, <:Any})
     bus_count = length(data["bus"])
     branches = [branch for branch in values(data["branch"])]
     if haskey(data, "ne_branch")
@@ -55,7 +58,7 @@ function calc_theta_delta_bounds(data::Dict{String,<:Any})
         angle_maxs = [branch["angmax"][c] for branch in branches]
 
         sort!(angle_mins)
-        sort!(angle_maxs, rev=true)
+        sort!(angle_maxs, rev = true)
 
         if length(angle_mins) > 1
             # note that, this can occur when dclines are present
@@ -79,12 +82,12 @@ function calc_theta_delta_bounds(data::Dict{String,<:Any})
     end
 end
 
-
-""
-function calc_max_cost_index(data::Dict{String,<:Any})
+"""
+"""
+function calc_max_cost_index(data::Dict{String, <:Any})
     if _IM.ismultinetwork(data)
         max_index = 0
-        for (i,nw_data) in data["nw"]
+        for (i, nw_data) in data["nw"]
             nw_max_index = _calc_max_cost_index(nw_data)
             max_index = max(max_index, nw_max_index)
         end
@@ -94,31 +97,33 @@ function calc_max_cost_index(data::Dict{String,<:Any})
     end
 end
 
-
-""
-function _calc_max_cost_index(data::Dict{String,<:Any})
+"""
+"""
+function _calc_max_cost_index(data::Dict{String, <:Any})
     max_index = 0
 
-    for (i,gen) in data["gen"]
+    for (i, gen) in data["gen"]
         if haskey(gen, "model")
             if gen["model"] == 2
                 if haskey(gen, "cost")
                     max_index = max(max_index, length(gen["cost"]))
                 end
             else
-                Memento.warn(_LOGGER, "skipping cost generator $(i) cost model in calc_cost_order, only model 2 is supported.")
+                Memento.warn(_LOGGER,
+                    "skipping cost generator $(i) cost model in calc_cost_order, only model 2 is supported.")
             end
         end
     end
 
-    for (i,dcline) in data["dcline"]
+    for (i, dcline) in data["dcline"]
         if haskey(dcline, "model")
             if dcline["model"] == 2
                 if haskey(dcline, "cost")
                     max_index = max(max_index, length(dcline["cost"]))
                 end
             else
-                Memento.warn(_LOGGER, "skipping cost dcline $(i) cost model in calc_cost_order, only model 2 is supported.")
+                Memento.warn(_LOGGER,
+                    "skipping cost dcline $(i) cost model in calc_cost_order, only model 2 is supported.")
             end
         end
     end
@@ -126,22 +131,25 @@ function _calc_max_cost_index(data::Dict{String,<:Any})
     return max_index
 end
 
-
-"prints the text summary for a data file or dictionary to stdout"
-function print_summary(obj::Union{String, Dict{String,<:Any}}; kwargs...)
+"""
+prints the text summary for a data file or dictionary to stdout
+"""
+function print_summary(obj::Union{String, Dict{String, <:Any}}; kwargs...)
     summary(stdout, obj; kwargs...)
 end
 
-
-"prints the text summary for a data file to IO"
+"""
+prints the text summary for a data file to IO
+"""
 function summary(io::IO, file::String; kwargs...)
     data = parse_file(file)
     summary(io, data; kwargs...)
     return data
 end
 
-
-"maps component types to status parameters"
+"""
+maps component types to status parameters
+"""
 const pm_component_status = Dict(
     "bus" => "bus_type",
     "load" => "status",
@@ -150,10 +158,12 @@ const pm_component_status = Dict(
     "storage" => "status",
     "switch" => "status",
     "branch" => "br_status",
-    "dcline" => "br_status",
+    "dcline" => "br_status"
 )
 
-"maps component types to inactive status values"
+"""
+maps component types to inactive status values
+"""
 const pm_component_status_inactive = Dict(
     "bus" => 4,
     "load" => 0,
@@ -162,7 +172,7 @@ const pm_component_status_inactive = Dict(
     "storage" => 0,
     "switch" => 0,
     "branch" => 0,
-    "dcline" => 0,
+    "dcline" => 0
 )
 
 const _pm_component_types_order = Dict(
@@ -172,11 +182,8 @@ const _pm_component_types_order = Dict(
 
 const _pm_component_parameter_order = Dict(
     "bus_i" => 1.0, "load_bus" => 2.0, "shunt_bus" => 3.0, "gen_bus" => 4.0,
-    "storage_bus" => 5.0, "f_bus" => 6.0, "t_bus" => 7.0,
-
-    "bus_name" => 9.1, "base_kv" => 9.2, "bus_type" => 9.3,
-
-    "vm" => 10.0, "va" => 11.0,
+    "storage_bus" => 5.0, "f_bus" => 6.0, "t_bus" => 7.0, "bus_name" => 9.1,
+    "base_kv" => 9.2, "bus_type" => 9.3, "vm" => 10.0, "va" => 11.0,
     "pd" => 20.0, "qd" => 21.0,
     "gs" => 30.0, "bs" => 31.0,
     "ps" => 35.0, "qs" => 36.0,
@@ -187,9 +194,7 @@ const _pm_component_parameter_order = Dict(
     "g_to" => 54.0, "b_to" => 55.0, "tap" => 56.0, "shift" => 57.0,
     "vf" => 58.1, "pf" => 58.2, "qf" => 58.3,
     "vt" => 58.4, "pt" => 58.5, "qt" => 58.6,
-    "loss0" => 58.7, "loss1" => 59.8,
-
-    "vmin" => 60.0, "vmax" => 61.0,
+    "loss0" => 58.7, "loss1" => 59.8, "vmin" => 60.0, "vmax" => 61.0,
     "pmin" => 62.0, "pmax" => 63.0,
     "qmin" => 64.0, "qmax" => 65.0,
     "rate_a" => 66.0, "rate_b" => 67.0, "rate_c" => 68.0,
@@ -199,18 +204,17 @@ const _pm_component_parameter_order = Dict(
     "discharge_rating" => 77.03, "charge_efficiency" => 77.04,
     "discharge_efficiency" => 77.05, "thermal_rating" => 77.06,
     "qmin" => 77.07, "qmax" => 77.08, "qmin" => 77.09, "qmax" => 77.10,
-    "r" => 77.11, "x" => 77.12, "p_loss" => 77.13, "q_loss" => 77.14,
-
-    "status" => 80.0, "gen_status" => 81.0, "br_status" => 82.0,
-
-    "model" => 90.0, "ncost" => 91.0, "cost" => 92.0, "startup" => 93.0, "shutdown" => 94.0
+    "r" => 77.11, "x" => 77.12, "p_loss" => 77.13, "q_loss" => 77.14, "status" => 80.0,
+    "gen_status" => 81.0, "br_status" => 82.0, "model" => 90.0,
+    "ncost" => 91.0, "cost" => 92.0, "startup" => 93.0, "shutdown" => 94.0
 )
 
 const _pm_component_status_parameters = Set(["status", "gen_status", "br_status"])
 
-
-"prints the text summary for a data dictionary to IO"
-function summary(io::IO, data::Dict{String,<:Any}; kwargs...)
+"""
+prints the text summary for a data dictionary to IO
+"""
+function summary(io::IO, data::Dict{String, <:Any}; kwargs...)
     _IM.summary(io, data;
         component_types_order = _pm_component_types_order,
         component_parameter_order = _pm_component_parameter_order,
@@ -218,24 +222,27 @@ function summary(io::IO, data::Dict{String,<:Any}; kwargs...)
         kwargs...)
 end
 
+function component_table(data::Dict{String, <:Any}, component::String, args...)
+    _IM.component_table(data, component, args...)
+end
 
-component_table(data::Dict{String,<:Any}, component::String, args...) = _IM.component_table(data, component, args...)
-
-
-"recursively applies new_data to data, overwriting information"
-function update_data!(data::Dict{String,<:Any}, new_data::Dict{String,<:Any})
+"""
+recursively applies new_data to data, overwriting information
+"""
+function update_data!(data::Dict{String, <:Any}, new_data::Dict{String, <:Any})
     if haskey(data, "conductors") && haskey(new_data, "conductors")
         if data["conductors"] != new_data["conductors"]
             Memento.error(_LOGGER, "update_data requires datasets with the same number of conductors")
         end
     else
-        if (haskey(data, "conductors") && !haskey(new_data, "conductors")) || (!haskey(data, "conductors") && haskey(new_data, "conductors"))
-            Memento.warn(_LOGGER, "running update_data with missing onductors fields, conductors may be incorrect")
+        if (haskey(data, "conductors") && !haskey(new_data, "conductors")) ||
+           (!haskey(data, "conductors") && haskey(new_data, "conductors"))
+            Memento.warn(_LOGGER,
+                "running update_data with missing onductors fields, conductors may be incorrect")
         end
     end
     _IM.update_data!(data, new_data)
 end
-
 
 """
 Turns in given single network data in multinetwork data with a `count`
@@ -244,27 +251,29 @@ of the network data.  Significant multinetwork space savings can often be
 achieved by building application specific methods of building multinetwork
 with minimal data replication.
 """
-function replicate(sn_data::Dict{String,<:Any}, count::Int; global_keys::Set{String}=Set{String}())
+function replicate(sn_data::Dict{String, <:Any}, count::Int; global_keys::Set{String} = Set{String}())
     return _IM.replicate(sn_data, count, union(global_keys, _pm_global_keys))
 end
 
-
-"turns a single network and a time_series data block into a multi-network"
-function make_multinetwork(data::Dict{String, <:Any}; global_keys::Set{String}=Set{String}())
+"""
+turns a single network and a time_series data block into a multi-network
+"""
+function make_multinetwork(data::Dict{String, <:Any}; global_keys::Set{String} = Set{String}())
     return _IM.make_multinetwork(data, pm_it_name, union(global_keys, _pm_global_keys))
 end
 
-
-""
-function _apply_func!(data::Dict{String,<:Any}, key::String, func)
+"""
+"""
+function _apply_func!(data::Dict{String, <:Any}, key::String, func)
     if haskey(data, key)
         data[key] = func.(data[key])
     end
 end
 
-
-"Transforms network data into per-unit"
-function make_per_unit!(data::Dict{String,<:Any})
+"""
+Transforms network data into per-unit
+"""
+function make_per_unit!(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     if !haskey(pm_data, "per_unit") || pm_data["per_unit"] == false
@@ -273,19 +282,18 @@ function make_per_unit!(data::Dict{String,<:Any})
     end
 end
 
-
-""
-function _make_per_unit!(data::Dict{String,<:Any})
+"""
+"""
+function _make_per_unit!(data::Dict{String, <:Any})
     mva_base = data["baseMVA"]
 
     # to be consistent with matpower's opf.flow_lim= 'I' with current magnitude
     # limit defined in MVA at 1 p.u. voltage
     ka_base = mva_base
 
-    rescale        = x -> x/mva_base
-    rescale_dual   = x -> x*mva_base
+    rescale = x -> x/mva_base
+    rescale_dual = x -> x*mva_base
     rescale_ampere = x -> x/ka_base
-
 
     if haskey(data, "bus")
         for (i, bus) in data["bus"]
@@ -409,9 +417,10 @@ function _make_per_unit!(data::Dict{String,<:Any})
     end
 end
 
-
-"Transforms network data into mixed-units (inverse of per-unit)"
-function make_mixed_units!(data::Dict{String,<:Any})
+"""
+Transforms network data into mixed-units (inverse of per-unit)
+"""
+function make_mixed_units!(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     if !haskey(pm_data, "per_unit") || pm_data["per_unit"] == true
@@ -420,17 +429,17 @@ function make_mixed_units!(data::Dict{String,<:Any})
     end
 end
 
-
-""
-function _make_mixed_units!(data::Dict{String,<:Any})
+"""
+"""
+function _make_mixed_units!(data::Dict{String, <:Any})
     mva_base = data["baseMVA"]
 
     # to be consistent with matpower's opf.flow_lim= 'I' with current magnitude
     # limit defined in MVA at 1 p.u. voltage
     ka_base = mva_base
 
-    rescale        = x -> x*mva_base
-    rescale_dual   = x -> x/mva_base
+    rescale = x -> x*mva_base
+    rescale_dual = x -> x/mva_base
     rescale_ampere = x -> x*ka_base
 
     if haskey(data, "bus")
@@ -500,7 +509,6 @@ function _make_mixed_units!(data::Dict{String,<:Any})
         end
     end
 
-
     branches = []
     if haskey(data, "branch")
         append!(branches, values(data["branch"]))
@@ -535,7 +543,7 @@ function _make_mixed_units!(data::Dict{String,<:Any})
     end
 
     if haskey(data, "dcline")
-        for (i,dcline) in data["dcline"]
+        for (i, dcline) in data["dcline"]
             _apply_func!(dcline, "loss0", rescale)
             _apply_func!(dcline, "pf", rescale)
             _apply_func!(dcline, "pt", rescale)
@@ -553,12 +561,11 @@ function _make_mixed_units!(data::Dict{String,<:Any})
             _rescale_cost_model!(dcline, 1.0/mva_base)
         end
     end
-
 end
 
-
-""
-function _rescale_cost_model!(comp::Dict{String,<:Any}, scale::Real)
+"""
+"""
+function _rescale_cost_model!(comp::Dict{String, <:Any}, scale::Real)
     if "model" in keys(comp) && "cost" in keys(comp)
         if comp["model"] == 1
             for i in 1:2:length(comp["cost"])
@@ -575,10 +582,10 @@ function _rescale_cost_model!(comp::Dict{String,<:Any}, scale::Real)
     end
 end
 
-
-
-"computes the generator cost from given network data"
-function calc_gen_cost(data::Dict{String,<:Any})
+"""
+computes the generator cost from given network data
+"""
+function calc_gen_cost(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"])
@@ -597,9 +604,9 @@ function calc_gen_cost(data::Dict{String,<:Any})
     end
 end
 
-function _calc_gen_cost(data::Dict{String,<:Any})
+function _calc_gen_cost(data::Dict{String, <:Any})
     cost = 0.0
-    for (i,gen) in data["gen"]
+    for (i, gen) in data["gen"]
         if gen["gen_status"] == 1
             if haskey(gen, "model")
                 if gen["model"] == 1
@@ -617,16 +624,17 @@ function _calc_gen_cost(data::Dict{String,<:Any})
     return cost
 end
 
-
-"computes the dcline cost from given network data"
-function calc_dcline_cost(data::Dict{String,<:Any})
+"""
+computes the dcline cost from given network data
+"""
+function calc_dcline_cost(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"])
     @assert(!haskey(pm_data, "conductors"))
 
     if _IM.ismultinetwork(pm_data)
-        nw_costs = Dict{String,Any}()
+        nw_costs = Dict{String, Any}()
 
         for (i, pm_nw_data) in pm_data["nw"]
             nw_costs[i] = _calc_dcline_cost(pm_nw_data)
@@ -638,9 +646,9 @@ function calc_dcline_cost(data::Dict{String,<:Any})
     end
 end
 
-function _calc_dcline_cost(data::Dict{String,<:Any})
+function _calc_dcline_cost(data::Dict{String, <:Any})
     cost = 0.0
-    for (i,dcline) in data["dcline"]
+    for (i, dcline) in data["dcline"]
         if dcline["br_status"] == 1
             if haskey(dcline, "model")
                 if dcline["model"] == 1
@@ -658,8 +666,6 @@ function _calc_dcline_cost(data::Dict{String,<:Any})
     return cost
 end
 
-
-
 """
 compute lines in m and b from from pwl cost models data is a list of components.
 
@@ -667,44 +673,43 @@ Can be run on data or ref data structures
 """
 function calc_cost_pwl_lines(comp_dict::Dict)
     lines = Dict()
-    for (i,comp) in comp_dict
+    for (i, comp) in comp_dict
         lines[i] = _calc_comp_lines(comp)
     end
     return lines
 end
 
-
 """
 compute lines in m and b from from pwl cost models
 """
-function _calc_comp_lines(component::Dict{String,<:Any})
+function _calc_comp_lines(component::Dict{String, <:Any})
     @assert component["model"] == 1
     points = component["cost"]
 
     line_data = []
     for i in 3:2:length(points)
-        x1 = points[i-2]
-        y1 = points[i-1]
-        x2 = points[i-0]
-        y2 = points[i+1]
+        x1 = points[i - 2]
+        y1 = points[i - 1]
+        x2 = points[i - 0]
+        y2 = points[i + 1]
 
         m = (y2 - y1)/(x2 - x1)
         b = y1 - m * x1
 
-        push!(line_data, (slope=m, intercept=b))
+        push!(line_data, (slope = m, intercept = b))
     end
 
     for i in 2:length(line_data)
-        if line_data[i-1].slope > line_data[i].slope
-            Memento.error(_LOGGER, "non-convex pwl function found in points $(component["cost"])\nlines: $(line_data)")
+        if line_data[i - 1].slope > line_data[i].slope
+            Memento.error(_LOGGER,
+                "non-convex pwl function found in points $(component["cost"])\nlines: $(line_data)")
         end
     end
 
     return line_data
 end
 
-
-function _calc_cost_pwl(component::Dict{String,<:Any}, setpoint_id)
+function _calc_cost_pwl(component::Dict{String, <:Any}, setpoint_id)
     comp_lines = _calc_comp_lines(component)
 
     setpoint = component[setpoint_id]
@@ -716,8 +721,7 @@ function _calc_cost_pwl(component::Dict{String,<:Any}, setpoint_id)
     return cost
 end
 
-
-function _calc_cost_polynomial(component::Dict{String,<:Any}, setpoint_id)
+function _calc_cost_polynomial(component::Dict{String, <:Any}, setpoint_id)
     cost_terms_rev = reverse(component["cost"])
 
     setpoint = component[setpoint_id]
@@ -730,42 +734,45 @@ function _calc_cost_polynomial(component::Dict{String,<:Any}, setpoint_id)
         cost = cost_terms_rev[1] + cost_terms_rev[2]*setpoint
     else
         cost_terms_rev_high = cost_terms_rev[3:end]
-        cost = cost_terms_rev[1] + cost_terms_rev[2]*setpoint + sum( v*setpoint^(d+1) for (d,v) in enumerate(cost_terms_rev_high) )
+        cost = cost_terms_rev[1] + cost_terms_rev[2]*setpoint +
+               sum(v*setpoint^(d+1) for (d, v) in enumerate(cost_terms_rev_high))
     end
 
     return cost
 end
 
-
-"takes the current ac solution and configures it a starting value for an ac power flow solver"
-function set_ac_pf_start_values!(network::Dict{String,<:Any})
-    for (i,bus) in network["bus"]
+"""
+takes the current ac solution and configures it a starting value for an ac power flow solver
+"""
+function set_ac_pf_start_values!(network::Dict{String, <:Any})
+    for (i, bus) in network["bus"]
         bus["va_start"] = bus["va"]
         bus["vm_start"] = bus["vm"]
     end
 
-    for (i,gen) in network["gen"]
+    for (i, gen) in network["gen"]
         gen["pg_start"] = gen["pg"]
         gen["qg_start"] = gen["qg"]
     end
 end
 
-
-"assumes a valid ac solution is included in the data and computes the branch flow values"
-function calc_branch_flow_ac(data::Dict{String,<:Any})
+"""
+assumes a valid ac solution is included in the data and computes the branch flow values
+"""
+function calc_branch_flow_ac(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"])
     @assert(!haskey(pm_data, "conductors"))
 
     if _IM.ismultinetwork(pm_data)
-        nws = Dict{String,Any}()
+        nws = Dict{String, Any}()
 
         for (i, pm_nw_data) in pm_data["nw"]
             nws[i] = _calc_branch_flow_ac(pm_nw_data)
         end
 
-        return Dict{String,Any}(
+        return Dict{String, Any}(
             "nw" => nws,
             "per_unit" => pm_data["per_unit"],
             "baseMVA" => pm_data["baseMVA"]
@@ -778,14 +785,15 @@ function calc_branch_flow_ac(data::Dict{String,<:Any})
     end
 end
 
+"""
+helper function for calc_branch_flow_ac
+"""
+function _calc_branch_flow_ac(data::Dict{String, <:Any})
+    vm = Dict(bus["index"] => bus["vm"] for (i, bus) in data["bus"])
+    va = Dict(bus["index"] => bus["va"] for (i, bus) in data["bus"])
 
-"helper function for calc_branch_flow_ac"
-function _calc_branch_flow_ac(data::Dict{String,<:Any})
-    vm = Dict(bus["index"] => bus["vm"] for (i,bus) in data["bus"])
-    va = Dict(bus["index"] => bus["va"] for (i,bus) in data["bus"])
-
-    flows = Dict{String,Any}()
-    for (i,branch) in data["branch"]
+    flows = Dict{String, Any}()
+    for (i, branch) in data["branch"]
         if branch["br_status"] != 0
             f_bus = branch["f_bus"]
             t_bus = branch["t_bus"]
@@ -804,11 +812,17 @@ function _calc_branch_flow_ac(data::Dict{String,<:Any})
             va_fr = va[f_bus]
             va_to = va[t_bus]
 
-            p_fr =  (g+g_fr)/tm^2*vm_fr^2 + (-g*tr+b*ti)/tm^2*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/tm^2*(vm_fr*vm_to*sin(va_fr-va_to))
-            q_fr = -(b+b_fr)/tm^2*vm_fr^2 - (-b*tr-g*ti)/tm^2*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/tm^2*(vm_fr*vm_to*sin(va_fr-va_to))
+            p_fr = (g+g_fr)/tm^2*vm_fr^2 +
+                   (-g*tr+b*ti)/tm^2*(vm_fr*vm_to*cos(va_fr-va_to)) +
+                   (-b*tr-g*ti)/tm^2*(vm_fr*vm_to*sin(va_fr-va_to))
+            q_fr = -(b+b_fr)/tm^2*vm_fr^2 -
+                   (-b*tr-g*ti)/tm^2*(vm_fr*vm_to*cos(va_fr-va_to)) +
+                   (-g*tr+b*ti)/tm^2*(vm_fr*vm_to*sin(va_fr-va_to))
 
-            p_to =  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/tm^2*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/tm^2*(vm_to*vm_fr*sin(va_to-va_fr))
-            q_to = -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/tm^2*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/tm^2*(vm_to*vm_fr*sin(va_to-va_fr))
+            p_to = (g+g_to)*vm_to^2 + (-g*tr-b*ti)/tm^2*(vm_to*vm_fr*cos(va_to-va_fr)) +
+                   (-b*tr+g*ti)/tm^2*(vm_to*vm_fr*sin(va_to-va_fr))
+            q_to = -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/tm^2*(vm_to*vm_fr*cos(va_to-va_fr)) +
+                   (-g*tr-b*ti)/tm^2*(vm_to*vm_fr*sin(va_to-va_fr))
         else
             p_fr = NaN
             q_fr = NaN
@@ -825,26 +839,26 @@ function _calc_branch_flow_ac(data::Dict{String,<:Any})
         )
     end
 
-    return Dict{String,Any}("branch" => flows)
+    return Dict{String, Any}("branch" => flows)
 end
 
-
-
-"assumes a vaild dc solution is included in the data and computes the branch flow values"
-function calc_branch_flow_dc(data::Dict{String,<:Any})
+"""
+assumes a vaild dc solution is included in the data and computes the branch flow values
+"""
+function calc_branch_flow_dc(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"])
     @assert(!haskey(pm_data, "conductors"))
 
     if _IM.ismultinetwork(pm_data)
-        nws = Dict{String,Any}()
+        nws = Dict{String, Any}()
 
         for (i, pm_nw_data) in pm_data["nw"]
             nws[i] = _calc_branch_flow_dc(pm_nw_data)
         end
 
-        return Dict{String,Any}(
+        return Dict{String, Any}(
             "nw" => nws,
             "per_unit" => pm_data["per_unit"],
             "baseMVA" => pm_data["baseMVA"]
@@ -857,14 +871,15 @@ function calc_branch_flow_dc(data::Dict{String,<:Any})
     end
 end
 
+"""
+helper function for calc_branch_flow_dc
+"""
+function _calc_branch_flow_dc(data::Dict{String, <:Any})
+    vm = Dict(bus["index"] => bus["vm"] for (i, bus) in data["bus"])
+    va = Dict(bus["index"] => bus["va"] for (i, bus) in data["bus"])
 
-"helper function for calc_branch_flow_dc"
-function _calc_branch_flow_dc(data::Dict{String,<:Any})
-    vm = Dict(bus["index"] => bus["vm"] for (i,bus) in data["bus"])
-    va = Dict(bus["index"] => bus["va"] for (i,bus) in data["bus"])
-
-    flows = Dict{String,Any}()
-    for (i,branch) in data["branch"]
+    flows = Dict{String, Any}()
+    for (i, branch) in data["branch"]
         if branch["br_status"] != 0
             f_bus = branch["f_bus"]
             t_bus = branch["t_bus"]
@@ -877,34 +892,33 @@ function _calc_branch_flow_dc(data::Dict{String,<:Any})
         end
 
         flows[i] = Dict(
-            "pf" =>  p_fr,
-            "qf" =>  NaN,
+            "pf" => p_fr,
+            "qf" => NaN,
             "pt" => -p_fr,
-            "qt" =>  NaN
+            "qt" => NaN
         )
     end
 
-    return Dict{String,Any}("branch" => flows)
+    return Dict{String, Any}("branch" => flows)
 end
 
-
-
-
-"assumes a vaild solution is included in the data and computes the power balance at each bus"
-function calc_power_balance(data::Dict{String,<:Any})
+"""
+assumes a vaild solution is included in the data and computes the power balance at each bus
+"""
+function calc_power_balance(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"]) # may not be strictly required
     @assert(!haskey(pm_data, "conductors"))
 
     if _IM.ismultinetwork(pm_data)
-        nws = Dict{String,Any}()
+        nws = Dict{String, Any}()
 
         for (i, pm_nw_data) in pm_data["nw"]
             nws[i] = _calc_power_balance(pm_nw_data)
         end
 
-        return Dict{String,Any}(
+        return Dict{String, Any}(
             "nw" => nws,
             "per_unit" => pm_data["per_unit"],
             "baseMVA" => pm_data["baseMVA"]
@@ -917,11 +931,12 @@ function calc_power_balance(data::Dict{String,<:Any})
     end
 end
 
-
-"helper function for calc_power_balance"
-function _calc_power_balance(data::Dict{String,<:Any})
-    bus_values = Dict(bus["index"] => Dict{String,Float64}() for (i,bus) in data["bus"])
-    for (i,bus) in data["bus"]
+"""
+helper function for calc_power_balance
+"""
+function _calc_power_balance(data::Dict{String, <:Any})
+    bus_values = Dict(bus["index"] => Dict{String, Float64}() for (i, bus) in data["bus"])
+    for (i, bus) in data["bus"]
         bvals = bus_values[bus["index"]]
         bvals["vm"] = bus["vm"]
 
@@ -947,7 +962,7 @@ function _calc_power_balance(data::Dict{String,<:Any})
         bvals["q_dc"] = 0.0
     end
 
-    for (i,load) in data["load"]
+    for (i, load) in data["load"]
         if load["status"] != 0
             bvals = bus_values[load["load_bus"]]
             bvals["pd"] += load["pd"]
@@ -955,7 +970,7 @@ function _calc_power_balance(data::Dict{String,<:Any})
         end
     end
 
-    for (i,shunt) in data["shunt"]
+    for (i, shunt) in data["shunt"]
         if shunt["status"] != 0
             bvals = bus_values[shunt["shunt_bus"]]
             bvals["gs"] += shunt["gs"]
@@ -963,7 +978,7 @@ function _calc_power_balance(data::Dict{String,<:Any})
         end
     end
 
-    for (i,storage) in data["storage"]
+    for (i, storage) in data["storage"]
         if storage["status"] != 0
             bvals = bus_values[storage["storage_bus"]]
             bvals["ps"] += storage["ps"]
@@ -971,7 +986,7 @@ function _calc_power_balance(data::Dict{String,<:Any})
         end
     end
 
-    for (i,gen) in data["gen"]
+    for (i, gen) in data["gen"]
         if gen["gen_status"] != 0
             bvals = bus_values[gen["gen_bus"]]
             bvals["pg"] += gen["pg"]
@@ -979,7 +994,7 @@ function _calc_power_balance(data::Dict{String,<:Any})
         end
     end
 
-    for (i,switch) in data["switch"]
+    for (i, switch) in data["switch"]
         if switch["status"] != 0
             bus_fr = switch["f_bus"]
             bvals_fr = bus_values[bus_fr]
@@ -993,7 +1008,7 @@ function _calc_power_balance(data::Dict{String,<:Any})
         end
     end
 
-    for (i,branch) in data["branch"]
+    for (i, branch) in data["branch"]
         if branch["br_status"] != 0
             bus_fr = branch["f_bus"]
             bvals_fr = bus_values[bus_fr]
@@ -1007,7 +1022,7 @@ function _calc_power_balance(data::Dict{String,<:Any})
         end
     end
 
-    for (i,dcline) in data["dcline"]
+    for (i, dcline) in data["dcline"]
         if dcline["br_status"] != 0
             bus_fr = dcline["f_bus"]
             bvals_fr = bus_values[bus_fr]
@@ -1021,12 +1036,14 @@ function _calc_power_balance(data::Dict{String,<:Any})
         end
     end
 
-    deltas = Dict{String,Any}()
-    for (i,bus) in data["bus"]
+    deltas = Dict{String, Any}()
+    for (i, bus) in data["bus"]
         if bus["bus_type"] != 4
             bvals = bus_values[bus["index"]]
-            p_delta = bvals["p"] + bvals["p_dc"] + bvals["psw"] - bvals["pg"] + bvals["ps"] + bvals["pd"] + bvals["gs"]*(bvals["vm"]^2)
-            q_delta = bvals["q"] + bvals["q_dc"] + bvals["qsw"] - bvals["qg"] + bvals["qs"] + bvals["qd"] - bvals["bs"]*(bvals["vm"]^2)
+            p_delta = bvals["p"] + bvals["p_dc"] + bvals["psw"] - bvals["pg"] +
+                      bvals["ps"] + bvals["pd"] + bvals["gs"]*(bvals["vm"]^2)
+            q_delta = bvals["q"] + bvals["q_dc"] + bvals["qsw"] - bvals["qg"] +
+                      bvals["qs"] + bvals["qd"] - bvals["bs"]*(bvals["vm"]^2)
         else
             p_delta = NaN
             q_delta = NaN
@@ -1034,19 +1051,16 @@ function _calc_power_balance(data::Dict{String,<:Any})
 
         deltas[i] = Dict(
             "p_delta" => p_delta,
-            "q_delta" => q_delta,
+            "q_delta" => q_delta
         )
     end
 
-    return Dict{String,Any}("bus" => deltas)
+    return Dict{String, Any}("bus" => deltas)
 end
 
-
-
-
-
-""
-function ismulticonductor(data::Dict{String,<:Any})
+"""
+"""
+function ismulticonductor(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
@@ -1056,29 +1070,28 @@ function ismulticonductor(data::Dict{String,<:Any})
     end
 end
 
-function _ismulticonductor(data::Dict{String,<:Any})
+function _ismulticonductor(data::Dict{String, <:Any})
     return haskey(data, "conductors")
 end
 
-
-""
-function check_conductors(data::Dict{String,<:Any})
+"""
+"""
+function check_conductors(data::Dict{String, <:Any})
     apply_pm!(_check_conductors, data)
 end
 
-
-""
-function _check_conductors(data::Dict{String,<:Any})
+"""
+"""
+function _check_conductors(data::Dict{String, <:Any})
     if haskey(data, "conductors") && data["conductors"] < 1
         Memento.error(_LOGGER, "conductor values must be positive integers, given $(data["conductors"])")
     end
 end
 
-
-
-
-"checks that voltage angle differences are within 90 deg., if not tightens"
-function correct_voltage_angle_differences!(data::Dict{String,<:Any}, default_pad = 1.0472)
+"""
+checks that voltage angle differences are within 90 deg., if not tightens
+"""
+function correct_voltage_angle_differences!(data::Dict{String, <:Any}, default_pad = 1.0472)
     pm_data = get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
@@ -1086,7 +1099,7 @@ function correct_voltage_angle_differences!(data::Dict{String,<:Any}, default_pa
     end
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"])
-    default_pad_deg = round(rad2deg(default_pad), digits=2)
+    default_pad_deg = round(rad2deg(default_pad), digits = 2)
 
     for c in 1:get(pm_data, "conductors", 1)
         cnd_str = haskey(pm_data, "conductors") ? ", conductor $(c)" : ""
@@ -1095,7 +1108,8 @@ function correct_voltage_angle_differences!(data::Dict{String,<:Any}, default_pa
             angmax = branch["angmax"][c]
 
             if angmin <= -pi/2
-                Memento.warn(_LOGGER, "this code only supports angmin values in -90 deg. to 90 deg., tightening the value on branch $i$(cnd_str) from $(rad2deg(angmin)) to -$(default_pad_deg) deg.")
+                Memento.warn(_LOGGER,
+                    "this code only supports angmin values in -90 deg. to 90 deg., tightening the value on branch $i$(cnd_str) from $(rad2deg(angmin)) to -$(default_pad_deg) deg.")
                 if haskey(pm_data, "conductors")
                     branch["angmin"][c] = -default_pad
                 else
@@ -1104,7 +1118,8 @@ function correct_voltage_angle_differences!(data::Dict{String,<:Any}, default_pa
             end
 
             if angmax >= pi/2
-                Memento.warn(_LOGGER, "this code only supports angmax values in -90 deg. to 90 deg., tightening the value on branch $i$(cnd_str) from $(rad2deg(angmax)) to $(default_pad_deg) deg.")
+                Memento.warn(_LOGGER,
+                    "this code only supports angmax values in -90 deg. to 90 deg., tightening the value on branch $i$(cnd_str) from $(rad2deg(angmax)) to $(default_pad_deg) deg.")
                 if haskey(pm_data, "conductors")
                     branch["angmax"][c] = default_pad
                 else
@@ -1113,28 +1128,30 @@ function correct_voltage_angle_differences!(data::Dict{String,<:Any}, default_pa
             end
 
             if angmin == 0.0 && angmax == 0.0
-                Memento.warn(_LOGGER, "angmin and angmax values are 0, widening these values on branch $i$(cnd_str) to +/- $(default_pad_deg) deg.")
+                Memento.warn(_LOGGER,
+                    "angmin and angmax values are 0, widening these values on branch $i$(cnd_str) to +/- $(default_pad_deg) deg.")
                 if haskey(pm_data, "conductors")
                     branch["angmin"][c] = -default_pad
-                    branch["angmax"][c] =  default_pad
+                    branch["angmax"][c] = default_pad
                 else
                     branch["angmin"] = -default_pad
-                    branch["angmax"] =  default_pad
+                    branch["angmax"] = default_pad
                 end
             end
         end
     end
-
 end
 
-
-"checks that each branch has non-negative thermal ratings and removes zero thermal ratings"
-function correct_thermal_limits!(data::Dict{String,<:Any})
+"""
+checks that each branch has non-negative thermal ratings and removes zero thermal ratings
+"""
+function correct_thermal_limits!(data::Dict{String, <:Any})
     apply_pm!(_correct_thermal_limits!, data)
 end
 
-""
-function _correct_thermal_limits!(pm_data::Dict{String,<:Any})
+"""
+"""
+function _correct_thermal_limits!(pm_data::Dict{String, <:Any})
     branches = [branch for branch in values(pm_data["branch"])]
 
     if haskey(pm_data, "ne_branch")
@@ -1149,7 +1166,8 @@ function _correct_thermal_limits!(pm_data::Dict{String,<:Any})
                 rate_value = branch[rate_key]
                 for c in conductors
                     if rate_value[c] < 0.0
-                        Memento.error(_LOGGER, "negative $(rate_key) value on branch $(branch["index"]), this code only supports non-negative $(rate_key) values")
+                        Memento.error(_LOGGER,
+                            "negative $(rate_key) value on branch $(branch["index"]), this code only supports non-negative $(rate_key) values")
                     end
                 end
                 if all(isapprox(rate_value[c], 0.0) for c in conductors)
@@ -1161,9 +1179,10 @@ function _correct_thermal_limits!(pm_data::Dict{String,<:Any})
     end
 end
 
-
-"checks that each branch has a reasonable thermal rating-a, if not computes one"
-function calc_thermal_limits!(data::Dict{String,<:Any})
+"""
+checks that each branch has a reasonable thermal rating-a, if not computes one
+"""
+function calc_thermal_limits!(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"])
@@ -1171,9 +1190,9 @@ function calc_thermal_limits!(data::Dict{String,<:Any})
     apply_pm!(_calc_thermal_limits!, data)
 end
 
-
-""
-function _calc_thermal_limits!(pm_data::Dict{String,<:Any})
+"""
+"""
+function _calc_thermal_limits!(pm_data::Dict{String, <:Any})
     mva_base = pm_data["baseMVA"]
 
     branches = [branch for branch in values(pm_data["branch"])]
@@ -1200,7 +1219,7 @@ function _calc_thermal_limits!(pm_data::Dict{String,<:Any})
                 x = branch["br_x"]
                 z = r + im * x
                 y = pinv(z)
-                y_mag = abs.(y[c,c])
+                y_mag = abs.(y[c, c])
 
                 fr_vmax = pm_data["bus"][string(branch["f_bus"])]["vmax"][c]
                 to_vmax = pm_data["bus"][string(branch["t_bus"])]["vmax"][c]
@@ -1214,7 +1233,8 @@ function _calc_thermal_limits!(pm_data::Dict{String,<:Any})
                     new_rate = min(new_rate, branch["c_rating_a"][c]*m_vmax)
                 end
 
-                Memento.warn(_LOGGER, "this code only supports positive rate_a values, changing the value on branch $(branch["index"])$(cnd_str) to $(round(mva_base*new_rate, digits=4))")
+                Memento.warn(_LOGGER,
+                    "this code only supports positive rate_a values, changing the value on branch $(branch["index"])$(cnd_str) to $(round(mva_base*new_rate, digits=4))")
 
                 if haskey(pm_data, "conductors")
                     branch["rate_a"][c] = new_rate
@@ -1224,18 +1244,18 @@ function _calc_thermal_limits!(pm_data::Dict{String,<:Any})
             end
         end
     end
-
 end
 
-
-
-"checks that each branch has non-negative current ratings and removes zero current ratings"
-function correct_current_limits!(data::Dict{String,<:Any})
+"""
+checks that each branch has non-negative current ratings and removes zero current ratings
+"""
+function correct_current_limits!(data::Dict{String, <:Any})
     apply_pm!(_correct_current_limits!, data)
 end
 
-""
-function _correct_current_limits!(pm_data::Dict{String,<:Any})
+"""
+"""
+function _correct_current_limits!(pm_data::Dict{String, <:Any})
     branches = [branch for branch in values(pm_data["branch"])]
 
     if haskey(pm_data, "ne_branch")
@@ -1250,7 +1270,8 @@ function _correct_current_limits!(pm_data::Dict{String,<:Any})
                 rate_value = branch[rate_key]
                 for c in conductors
                     if rate_value[c] < 0.0
-                        Memento.error(_LOGGER, "negative $(rate_key) value on branch $(branch["index"]), this code only supports non-negative $(rate_key) values")
+                        Memento.error(_LOGGER,
+                            "negative $(rate_key) value on branch $(branch["index"]), this code only supports non-negative $(rate_key) values")
                     end
                 end
                 if all(isapprox(rate_value[c], 0.0) for c in conductors)
@@ -1260,11 +1281,12 @@ function _correct_current_limits!(pm_data::Dict{String,<:Any})
             end
         end
     end
-
 end
 
-"checks that each branch has a reasonable current rating-a, if not computes one"
-function calc_current_limits!(data::Dict{String,<:Any})
+"""
+checks that each branch has a reasonable current rating-a, if not computes one
+"""
+function calc_current_limits!(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"])
@@ -1272,7 +1294,7 @@ function calc_current_limits!(data::Dict{String,<:Any})
     apply_pm!(_calc_current_limits!, data)
 end
 
-function _calc_current_limits!(pm_data::Dict{String,<:Any})
+function _calc_current_limits!(pm_data::Dict{String, <:Any})
     mva_base = pm_data["baseMVA"]
 
     branches = [branch for branch in values(pm_data["branch"])]
@@ -1299,13 +1321,14 @@ function _calc_current_limits!(pm_data::Dict{String,<:Any})
                 x = branch["br_x"]
                 z = r + im * x
                 y = pinv(z)
-                y_mag = abs.(y[c,c])
+                y_mag = abs.(y[c, c])
 
                 fr_vmax = pm_data["bus"][string(branch["f_bus"])]["vmax"][c]
                 to_vmax = pm_data["bus"][string(branch["t_bus"])]["vmax"][c]
                 m_vmax = max(fr_vmax, to_vmax)
 
-                new_c_rating = y_mag*sqrt(fr_vmax^2 + to_vmax^2 - 2*fr_vmax*to_vmax*cos(theta_max))
+                new_c_rating = y_mag*sqrt(fr_vmax^2 + to_vmax^2 -
+                                          2*fr_vmax*to_vmax*cos(theta_max))
 
                 if haskey(branch, "rate_a") && branch["rate_a"][c] > 0.0
                     fr_vmin = pm_data["bus"][string(branch["f_bus"])]["vmin"][c]
@@ -1315,45 +1338,46 @@ function _calc_current_limits!(pm_data::Dict{String,<:Any})
                     new_c_rating = min(new_c_rating, branch["rate_a"]/vm_min)
                 end
 
-                Memento.warn(_LOGGER, "this code only supports positive c_rating_a values, changing the value on branch $(branch["index"])$(cnd_str) to $(mva_base*new_c_rating)")
+                Memento.warn(_LOGGER,
+                    "this code only supports positive c_rating_a values, changing the value on branch $(branch["index"])$(cnd_str) to $(mva_base*new_c_rating)")
                 if haskey(pm_data, "conductors")
                     branch["c_rating_a"][c] = new_c_rating
                 else
                     branch["c_rating_a"] = new_c_rating
                 end
-
             end
         end
     end
-
 end
 
-
-"checks that all parallel branches have the same orientation"
-function correct_branch_directions!(data::Dict{String,<:Any})
+"""
+checks that all parallel branches have the same orientation
+"""
+function correct_branch_directions!(data::Dict{String, <:Any})
     apply_pm!(_correct_branch_directions!, data)
 end
 
-""
-function _correct_branch_directions!(pm_data::Dict{String,<:Any})
-
+"""
+"""
+function _correct_branch_directions!(pm_data::Dict{String, <:Any})
     orientations = Set()
     for (i, branch) in pm_data["branch"]
         orientation = (branch["f_bus"], branch["t_bus"])
         orientation_rev = (branch["t_bus"], branch["f_bus"])
 
         if in(orientation_rev, orientations)
-            Memento.warn(_LOGGER, "reversing the orientation of branch $(i) $(orientation) to be consistent with other parallel branches")
+            Memento.warn(_LOGGER,
+                "reversing the orientation of branch $(i) $(orientation) to be consistent with other parallel branches")
             branch_orginal = copy(branch)
             branch["f_bus"] = branch_orginal["t_bus"]
             branch["t_bus"] = branch_orginal["f_bus"]
-            branch["g_to"] = branch_orginal["g_fr"] .* branch_orginal["tap"]'.^2
-            branch["b_to"] = branch_orginal["b_fr"] .* branch_orginal["tap"]'.^2
-            branch["g_fr"] = branch_orginal["g_to"] ./ branch_orginal["tap"]'.^2
-            branch["b_fr"] = branch_orginal["b_to"] ./ branch_orginal["tap"]'.^2
+            branch["g_to"] = branch_orginal["g_fr"] .* branch_orginal["tap"]' .^ 2
+            branch["b_to"] = branch_orginal["b_fr"] .* branch_orginal["tap"]' .^ 2
+            branch["g_fr"] = branch_orginal["g_to"] ./ branch_orginal["tap"]' .^ 2
+            branch["b_fr"] = branch_orginal["b_to"] ./ branch_orginal["tap"]' .^ 2
             branch["tap"] = 1 ./ branch_orginal["tap"]
-            branch["br_r"] = branch_orginal["br_r"] .* branch_orginal["tap"]'.^2
-            branch["br_x"] = branch_orginal["br_x"] .* branch_orginal["tap"]'.^2
+            branch["br_r"] = branch_orginal["br_r"] .* branch_orginal["tap"]' .^ 2
+            branch["br_x"] = branch_orginal["br_x"] .* branch_orginal["tap"]' .^ 2
             branch["shift"] = -branch_orginal["shift"]
             branch["angmin"] = -branch_orginal["angmax"]
             branch["angmax"] = -branch_orginal["angmin"]
@@ -1361,18 +1385,18 @@ function _correct_branch_directions!(pm_data::Dict{String,<:Any})
         else
             push!(orientations, orientation)
         end
-
     end
-
 end
 
-
-"checks that all branches connect two distinct buses"
-function check_branch_loops(data::Dict{String,<:Any})
+"""
+checks that all branches connect two distinct buses
+"""
+function check_branch_loops(data::Dict{String, <:Any})
     apply_pm!(_check_branch_loops, data)
 end
 
-""
+"""
+"""
 function _check_branch_loops(pm_data::Dict{String, <:Any})
     for (i, branch) in pm_data["branch"]
         if branch["f_bus"] == branch["t_bus"]
@@ -1381,16 +1405,17 @@ function _check_branch_loops(pm_data::Dict{String, <:Any})
     end
 end
 
-
-"checks that all buses are unique and other components link to valid buses"
-function check_connectivity(data::Dict{String,<:Any})
+"""
+checks that all buses are unique and other components link to valid buses
+"""
+function check_connectivity(data::Dict{String, <:Any})
     apply_pm!(_check_connectivity, data)
 end
 
-
-""
-function _check_connectivity(data::Dict{String,<:Any})
-    bus_ids = Set(bus["index"] for (i,bus) in data["bus"])
+"""
+"""
+function _check_connectivity(data::Dict{String, <:Any})
+    bus_ids = Set(bus["index"] for (i, bus) in data["bus"])
     @assert(length(bus_ids) == length(data["bus"])) # if this is not true something very bad is going on
 
     for (i, load) in data["load"]
@@ -1448,15 +1473,17 @@ function _check_connectivity(data::Dict{String,<:Any})
     end
 end
 
-
-"checks that active components are not connected to inactive buses, otherwise prints warnings"
-function check_status(data::Dict{String,<:Any})
+"""
+checks that active components are not connected to inactive buses, otherwise prints warnings
+"""
+function check_status(data::Dict{String, <:Any})
     apply_pm!(_check_status, data)
 end
 
-""
-function _check_status(data::Dict{String,<:Any})
-    active_bus_ids = Set(bus["index"] for (i,bus) in data["bus"] if bus["bus_type"] != 4)
+"""
+"""
+function _check_status(data::Dict{String, <:Any})
+    active_bus_ids = Set(bus["index"] for (i, bus) in data["bus"] if bus["bus_type"] != 4)
 
     for (i, load) in data["load"]
         if load["status"] != 0 && !(load["load_bus"] in active_bus_ids)
@@ -1478,7 +1505,8 @@ function _check_status(data::Dict{String,<:Any})
 
     for (i, strg) in data["storage"]
         if strg["status"] != 0 && !(strg["storage_bus"] in active_bus_ids)
-            Memento.warn(_LOGGER, "active storage unit $(i) is connected to inactive bus $(strg["storage_bus"])")
+            Memento.warn(_LOGGER,
+                "active storage unit $(i) is connected to inactive bus $(strg["storage_bus"])")
         end
     end
 
@@ -1503,34 +1531,38 @@ function _check_status(data::Dict{String,<:Any})
     end
 end
 
-
-"get the reference bus in a network dataset"
-function reference_bus(data::Dict{String,<:Any})
+"""
+get the reference bus in a network dataset
+"""
+function reference_bus(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
         Memento.error(_LOGGER, "check_reference_bus does not yet support multinetwork data")
     end
 
-    ref_buses = [bus for (i,bus) in pm_data["bus"] if bus["bus_type"] == 3]
+    ref_buses = [bus for (i, bus) in pm_data["bus"] if bus["bus_type"] == 3]
 
     if length(ref_buses) != 1
-        Memento.error(_LOGGER, "exactly one refrence bus in data is required when calling reference_bus, given $(length(ref_buses))")
+        Memento.error(_LOGGER,
+            "exactly one refrence bus in data is required when calling reference_bus, given $(length(ref_buses))")
     end
     ref_buses = ref_buses[1]
 
     return ref_buses
 end
 
-
-"checks that the network contains at least one reference bus"
-function check_reference_bus(data::Dict{String,<:Any})
+"""
+checks that the network contains at least one reference bus
+"""
+function check_reference_bus(data::Dict{String, <:Any})
     apply_pm!(_check_reference_bus, data)
 end
 
-""
-function _check_reference_bus(data::Dict{String,<:Any})
-    ref_buses = Dict{String,Any}()
+"""
+"""
+function _check_reference_bus(data::Dict{String, <:Any})
+    ref_buses = Dict{String, Any}()
 
     for (i, bus) in data["bus"]
         if bus["bus_type"] == 3
@@ -1543,13 +1575,12 @@ function _check_reference_bus(data::Dict{String,<:Any})
     end
 end
 
-
 """
 checks that each branch has a reasonable transformer parameters
 
 this is important because setting tap == 0.0 leads to NaN computations, which are hard to debug
 """
-function correct_transformer_parameters!(data::Dict{String,<:Any})
+function correct_transformer_parameters!(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"])
@@ -1557,10 +1588,9 @@ function correct_transformer_parameters!(data::Dict{String,<:Any})
     apply_pm!(_correct_transformer_parameters!, data)
 end
 
-
-""
-function _correct_transformer_parameters!(pm_data::Dict{String,<:Any})
-
+"""
+"""
+function _correct_transformer_parameters!(pm_data::Dict{String, <:Any})
     for (i, branch) in pm_data["branch"]
         if !haskey(branch, "tap")
             Memento.warn(_LOGGER, "branch found without tap value, setting a tap to 1.0")
@@ -1573,7 +1603,8 @@ function _correct_transformer_parameters!(pm_data::Dict{String,<:Any})
             for c in 1:get(pm_data, "conductors", 1)
                 cnd_str = haskey(pm_data, "conductors") ? " on conductor $(c)" : ""
                 if branch["tap"][c] <= 0.0
-                    Memento.warn(_LOGGER, "branch found with non-positive tap value of $(branch["tap"][c]), setting a tap to 1.0$(cnd_str)")
+                    Memento.warn(_LOGGER,
+                        "branch found with non-positive tap value of $(branch["tap"][c]), setting a tap to 1.0$(cnd_str)")
                     if haskey(pm_data, "conductors")
                         branch["tap"][c] = 1.0
                     else
@@ -1591,95 +1622,111 @@ function _correct_transformer_parameters!(pm_data::Dict{String,<:Any})
             end
         end
     end
-
 end
 
 """
 checks that each storage unit has a reasonable parameters
 """
-function check_storage_parameters(data::Dict{String,<:Any})
+function check_storage_parameters(data::Dict{String, <:Any})
     apply_pm!(_check_storage_parameters, data)
 end
 
-""
-function _check_storage_parameters(data::Dict{String,<:Any})
+"""
+"""
+function _check_storage_parameters(data::Dict{String, <:Any})
     for (i, strg) in data["storage"]
         if strg["energy"] < 0.0
-            Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive energy level $(strg["energy"])")
+            Memento.error(_LOGGER,
+                "storage unit $(strg["index"]) has a non-positive energy level $(strg["energy"])")
         end
         if strg["energy_rating"] < 0.0
-            Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive energy rating $(strg["energy_rating"])")
+            Memento.error(_LOGGER,
+                "storage unit $(strg["index"]) has a non-positive energy rating $(strg["energy_rating"])")
         end
         if strg["charge_rating"] < 0.0
-            Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive charge rating $(strg["energy_rating"])")
+            Memento.error(_LOGGER,
+                "storage unit $(strg["index"]) has a non-positive charge rating $(strg["energy_rating"])")
         end
         if strg["discharge_rating"] < 0.0
-            Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive discharge rating $(strg["energy_rating"])")
+            Memento.error(_LOGGER,
+                "storage unit $(strg["index"]) has a non-positive discharge rating $(strg["energy_rating"])")
         end
 
         for c in 1:get(data, "conductors", 1)
             if strg["r"][c] < 0.0
-                Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive resistance $(strg["r"][c])")
+                Memento.error(_LOGGER,
+                    "storage unit $(strg["index"]) has a non-positive resistance $(strg["r"][c])")
             end
             if strg["x"][c] < 0.0
-                Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive reactance $(strg["x"][c])")
+                Memento.error(_LOGGER,
+                    "storage unit $(strg["index"]) has a non-positive reactance $(strg["x"][c])")
             end
             if haskey(strg, "thermal_rating") && strg["thermal_rating"][c] < 0.0
-                Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive thermal rating $(strg["thermal_rating"][c])")
+                Memento.error(_LOGGER,
+                    "storage unit $(strg["index"]) has a non-positive thermal rating $(strg["thermal_rating"][c])")
             end
             if haskey(strg, "current_rating") && strg["current_rating"][c] < 0.0
-                Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive current rating $(strg["thermal_rating"][c])")
+                Memento.error(_LOGGER,
+                    "storage unit $(strg["index"]) has a non-positive current rating $(strg["thermal_rating"][c])")
             end
         end
 
         if strg["charge_efficiency"] < 0.0
-            Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive charge efficiency of $(strg["charge_efficiency"])")
+            Memento.error(_LOGGER,
+                "storage unit $(strg["index"]) has a non-positive charge efficiency of $(strg["charge_efficiency"])")
         end
         if strg["charge_efficiency"] <= 0.0 || strg["charge_efficiency"] > 1.0
-            Memento.warn(_LOGGER, "storage unit $(strg["index"]) charge efficiency of $(strg["charge_efficiency"]) is out of the valid range (0.0. 1.0]")
+            Memento.warn(_LOGGER,
+                "storage unit $(strg["index"]) charge efficiency of $(strg["charge_efficiency"]) is out of the valid range (0.0. 1.0]")
         end
         if strg["discharge_efficiency"] < 0.0
-            Memento.error(_LOGGER, "storage unit $(strg["index"]) has a non-positive discharge efficiency of $(strg["discharge_efficiency"])")
+            Memento.error(_LOGGER,
+                "storage unit $(strg["index"]) has a non-positive discharge efficiency of $(strg["discharge_efficiency"])")
         end
         if strg["discharge_efficiency"] <= 0.0 || strg["discharge_efficiency"] > 1.0
-            Memento.warn(_LOGGER, "storage unit $(strg["index"]) discharge efficiency of $(strg["discharge_efficiency"]) is out of the valid range (0.0. 1.0]")
+            Memento.warn(_LOGGER,
+                "storage unit $(strg["index"]) discharge efficiency of $(strg["discharge_efficiency"]) is out of the valid range (0.0. 1.0]")
         end
 
         if strg["p_loss"] > 0.0 && strg["energy"] <= 0.0
-            Memento.warn(_LOGGER, "storage unit $(strg["index"]) has positive active power losses but zero initial energy.  This can lead to model infeasiblity.")
+            Memento.warn(_LOGGER,
+                "storage unit $(strg["index"]) has positive active power losses but zero initial energy.  This can lead to model infeasiblity.")
         end
         if strg["q_loss"] > 0.0 && strg["energy"] <= 0.0
-            Memento.warn(_LOGGER, "storage unit $(strg["index"]) has positive reactive power losses but zero initial energy.  This can lead to model infeasiblity.")
+            Memento.warn(_LOGGER,
+                "storage unit $(strg["index"]) has positive reactive power losses but zero initial energy.  This can lead to model infeasiblity.")
         end
     end
-
 end
-
 
 """
 checks that each switch has a reasonable parameters
 """
-function check_switch_parameters(data::Dict{String,<:Any})
+function check_switch_parameters(data::Dict{String, <:Any})
     apply_pm!(_check_switch_parameters, data)
 end
 
-""
-function _check_switch_parameters(data::Dict{String,<:Any})
+"""
+"""
+function _check_switch_parameters(data::Dict{String, <:Any})
     for (i, switch) in data["switch"]
-        if switch["state"] <= 0.0 && (!isapprox(switch["psw"], 0.0) || !isapprox(switch["qsw"], 0.0))
-            Memento.warn(_LOGGER, "switch $(switch["index"]) is open with non-zero power values $(switch["psw"]), $(switch["qsw"])")
+        if switch["state"] <= 0.0 &&
+           (!isapprox(switch["psw"], 0.0) || !isapprox(switch["qsw"], 0.0))
+            Memento.warn(_LOGGER,
+                "switch $(switch["index"]) is open with non-zero power values $(switch["psw"]), $(switch["qsw"])")
         end
 
         if haskey(switch, "thermal_rating") && switch["thermal_rating"] < 0.0
-            Memento.error(_LOGGER, "switch $(switch["index"]) has a non-positive thermal_rating $(switch["thermal_rating"])")
+            Memento.error(_LOGGER,
+                "switch $(switch["index"]) has a non-positive thermal_rating $(switch["thermal_rating"])")
         end
 
         if haskey(switch, "current_rating") && switch["current_rating"] < 0.0
-            Memento.error(_LOGGER, "switch $(switch["index"]) has a non-positive current_rating $(switch["current_rating"])")
+            Memento.error(_LOGGER,
+                "switch $(switch["index"]) has a non-positive current_rating $(switch["current_rating"])")
         end
     end
 end
-
 
 """
 checks bus types are suitable for a power flow study, if not, fixes them.
@@ -1690,15 +1737,16 @@ active connected generator.
 
 assumes that the network is a single connected component
 """
-function correct_bus_types!(data::Dict{String,<:Any})
+function correct_bus_types!(data::Dict{String, <:Any})
     apply_pm!(_correct_bus_types!, data)
 end
 
-""
-function _correct_bus_types!(pm_data::Dict{String,<:Any})
-    bus_gens = Dict(bus["index"] => [] for (i,bus) in pm_data["bus"])
+"""
+"""
+function _correct_bus_types!(pm_data::Dict{String, <:Any})
+    bus_gens = Dict(bus["index"] => [] for (i, bus) in pm_data["bus"])
 
-    for (i,gen) in pm_data["gen"]
+    for (i, gen) in pm_data["gen"]
         if gen["gen_status"] != 0
             push!(bus_gens[gen["gen_bus"]], i)
         end
@@ -1709,29 +1757,33 @@ function _correct_bus_types!(pm_data::Dict{String,<:Any})
         idx = bus["index"]
         if bus["bus_type"] == 1
             if length(bus_gens[idx]) != 0 # PQ
-                Memento.warn(_LOGGER, "active generators found at bus $(bus["bus_i"]), updating to bus type from $(bus["bus_type"]) to 2")
+                Memento.warn(_LOGGER,
+                    "active generators found at bus $(bus["bus_i"]), updating to bus type from $(bus["bus_type"]) to 2")
                 bus["bus_type"] = 2
             end
         elseif bus["bus_type"] == 2 # PV
             if length(bus_gens[idx]) == 0
-                Memento.warn(_LOGGER, "no active generators found at bus $(bus["bus_i"]), updating to bus type from $(bus["bus_type"]) to 1")
+                Memento.warn(_LOGGER,
+                    "no active generators found at bus $(bus["bus_i"]), updating to bus type from $(bus["bus_type"]) to 1")
                 bus["bus_type"] = 1
             end
         elseif bus["bus_type"] == 3 # Slack
             if length(bus_gens[idx]) != 0
                 slack_found = true
             else
-                Memento.warn(_LOGGER, "no active generators found at bus $(bus["bus_i"]), updating to bus type from $(bus["bus_type"]) to 1")
+                Memento.warn(_LOGGER,
+                    "no active generators found at bus $(bus["bus_i"]), updating to bus type from $(bus["bus_type"]) to 1")
                 bus["bus_type"] = 1
             end
         elseif bus["bus_type"] == 4 # inactive bus
-            # do nothing
+        # do nothing
         else  # unknown bus type
             new_bus_type = 1
             if length(bus_gens[idx]) != 0
                 new_bus_type = 2
             end
-            Memento.warn(_LOGGER, "bus $(bus["bus_i"]) has an unrecongized bus_type $(bus["bus_type"]), updating to bus_type $(new_bus_type)")
+            Memento.warn(_LOGGER,
+                "bus $(bus["bus_i"]) has an unrecongized bus_type $(bus["bus_type"]), updating to bus_type $(new_bus_type)")
             bus["bus_type"] = new_bus_type
         end
     end
@@ -1742,25 +1794,28 @@ function _correct_bus_types!(pm_data::Dict{String,<:Any})
             gen_bus = gen["gen_bus"]
             ref_bus = pm_data["bus"]["$(gen_bus)"]
             ref_bus["bus_type"] = 3
-            Memento.warn(_LOGGER, "no reference bus found, setting bus $(gen_bus) as reference based on generator $(gen["index"])")
+            Memento.warn(_LOGGER,
+                "no reference bus found, setting bus $(gen_bus) as reference based on generator $(gen["index"])")
         else
-            Memento.error(_LOGGER, "no generators found in the given network data, correct_bus_types! requires at least one generator at the reference bus")
+            Memento.error(_LOGGER,
+                "no generators found in the given network data, correct_bus_types! requires at least one generator at the reference bus")
         end
     end
-
 end
 
-
-"find the largest active generator in a collection of generators"
+"""
+find the largest active generator in a collection of generators
+"""
 function _biggest_generator(gens::Dict)::Dict
     if length(gens) == 0
-        Memento.error(_LOGGER, "generator list passed to _biggest_generator was empty.  please report this bug.")
+        Memento.error(_LOGGER,
+            "generator list passed to _biggest_generator was empty.  please report this bug.")
     end
 
-    biggest_gen = Dict{String,Any}()
+    biggest_gen = Dict{String, Any}()
     biggest_value = -Inf
 
-    for (k,gen) in gens
+    for (k, gen) in gens
         if gen["gen_status"] != 0
             pmax = maximum(gen["pmax"])
             if pmax > biggest_value
@@ -1773,9 +1828,10 @@ function _biggest_generator(gens::Dict)::Dict
     return biggest_gen
 end
 
-
-"checks that parameters for dc lines are reasonable"
-function correct_dcline_limits!(data::Dict{String,<:Any})
+"""
+checks that parameters for dc lines are reasonable
+"""
+function correct_dcline_limits!(data::Dict{String, <:Any})
     pm_data = get_pm_data(data)
 
     @assert("per_unit" in keys(pm_data) && pm_data["per_unit"])
@@ -1783,8 +1839,9 @@ function correct_dcline_limits!(data::Dict{String,<:Any})
     apply_pm!(_correct_dcline_limits!, data)
 end
 
-""
-function _correct_dcline_limits!(pm_data::Dict{String,<:Any})
+"""
+"""
+function _correct_dcline_limits!(pm_data::Dict{String, <:Any})
     mva_base = pm_data["baseMVA"]
 
     for c in 1:get(pm_data, "conductors", 1)
@@ -1792,7 +1849,8 @@ function _correct_dcline_limits!(pm_data::Dict{String,<:Any})
         for (i, dcline) in pm_data["dcline"]
             if dcline["loss0"][c] < 0.0
                 new_rate = 0.0
-                Memento.warn(_LOGGER, "this code only supports positive loss0 values, changing the value on dcline $(dcline["index"])$(cnd_str) from $(mva_base*dcline["loss0"][c]) to $(mva_base*new_rate)")
+                Memento.warn(_LOGGER,
+                    "this code only supports positive loss0 values, changing the value on dcline $(dcline["index"])$(cnd_str) from $(mva_base*dcline["loss0"][c]) to $(mva_base*new_rate)")
                 if haskey(pm_data, "conductors")
                     dcline["loss0"][c] = new_rate
                 else
@@ -1800,9 +1858,11 @@ function _correct_dcline_limits!(pm_data::Dict{String,<:Any})
                 end
             end
 
-            if dcline["loss0"][c] >= dcline["pmaxf"][c]*(1-dcline["loss1"][c] )+ dcline["pmaxt"][c]
+            if dcline["loss0"][c] >=
+               dcline["pmaxf"][c]*(1-dcline["loss1"][c]) + dcline["pmaxt"][c]
                 new_rate = 0.0
-                Memento.warn(_LOGGER, "this code only supports loss0 values which are consistent with the line flow bounds, changing the value on dcline $(dcline["index"])$(cnd_str) from $(mva_base*dcline["loss0"][c]) to $(mva_base*new_rate)")
+                Memento.warn(_LOGGER,
+                    "this code only supports loss0 values which are consistent with the line flow bounds, changing the value on dcline $(dcline["index"])$(cnd_str) from $(mva_base*dcline["loss0"][c]) to $(mva_base*new_rate)")
                 if haskey(pm_data, "conductors")
                     dcline["loss0"][c] = new_rate
                 else
@@ -1812,7 +1872,8 @@ function _correct_dcline_limits!(pm_data::Dict{String,<:Any})
 
             if dcline["loss1"][c] < 0.0
                 new_rate = 0.0
-                Memento.warn(_LOGGER, "this code only supports positive loss1 values, changing the value on dcline $(dcline["index"])$(cnd_str) from $(dcline["loss1"][c]) to $(new_rate)")
+                Memento.warn(_LOGGER,
+                    "this code only supports positive loss1 values, changing the value on dcline $(dcline["index"])$(cnd_str) from $(dcline["loss1"][c]) to $(new_rate)")
                 if haskey(pm_data, "conductors")
                     dcline["loss1"][c] = new_rate
                 else
@@ -1822,7 +1883,8 @@ function _correct_dcline_limits!(pm_data::Dict{String,<:Any})
 
             if dcline["loss1"][c] >= 1.0
                 new_rate = 0.0
-                Memento.warn(_LOGGER, "this code only supports loss1 values < 1, changing the value on dcline $(dcline["index"])$(cnd_str) from $(dcline["loss1"][c]) to $(new_rate)")
+                Memento.warn(_LOGGER,
+                    "this code only supports loss1 values < 1, changing the value on dcline $(dcline["index"])$(cnd_str) from $(dcline["loss1"][c]) to $(new_rate)")
                 if haskey(pm_data, "conductors")
                     dcline["loss1"][c] = new_rate
                 else
@@ -1830,32 +1892,34 @@ function _correct_dcline_limits!(pm_data::Dict{String,<:Any})
                 end
             end
 
-            if dcline["pmint"][c] <0.0 && dcline["loss1"][c] > 0.0
+            if dcline["pmint"][c] < 0.0 && dcline["loss1"][c] > 0.0
                 #new_rate = 0.0
-                Memento.warn(_LOGGER, "the dc line model is not meant to be used bi-directionally when loss1 > 0, be careful interpreting the results as the dc line losses can now be negative. change loss1 to 0 to avoid this warning")
+                Memento.warn(_LOGGER,
+                    "the dc line model is not meant to be used bi-directionally when loss1 > 0, be careful interpreting the results as the dc line losses can now be negative. change loss1 to 0 to avoid this warning")
                 #dcline["loss0"] = new_rate
             end
         end
     end
-
 end
 
-
-"throws warnings if generator and dc line voltage setpoints are not consistent with the bus voltage setpoint"
-function check_voltage_setpoints(data::Dict{String,<:Any})
+"""
+throws warnings if generator and dc line voltage setpoints are not consistent with the bus voltage setpoint
+"""
+function check_voltage_setpoints(data::Dict{String, <:Any})
     apply_pm!(_check_voltage_setpoints, data)
 end
 
-""
-function _check_voltage_setpoints(data::Dict{String,<:Any})
-
+"""
+"""
+function _check_voltage_setpoints(data::Dict{String, <:Any})
     for c in 1:get(data, "conductors", 1)
         cnd_str = haskey(data, "conductors") ? "conductor $(c) " : ""
-        for (i,gen) in data["gen"]
+        for (i, gen) in data["gen"]
             bus_id = gen["gen_bus"]
             bus = data["bus"]["$(bus_id)"]
             if gen["vg"][c] != bus["vm"][c]
-                Memento.warn(_LOGGER, "the $(cnd_str)voltage setpoint on generator $(i) does not match the value at bus $(bus_id)")
+                Memento.warn(_LOGGER,
+                    "the $(cnd_str)voltage setpoint on generator $(i) does not match the value at bus $(bus_id)")
             end
         end
 
@@ -1867,25 +1931,29 @@ function _check_voltage_setpoints(data::Dict{String,<:Any})
             bus_to = data["bus"]["$(bus_to_id)"]
 
             if dcline["vf"][c] != bus_fr["vm"][c]
-                Memento.warn(_LOGGER, "the $(cnd_str)from bus voltage setpoint on dc line $(i) does not match the value at bus $(bus_fr_id)")
+                Memento.warn(_LOGGER,
+                    "the $(cnd_str)from bus voltage setpoint on dc line $(i) does not match the value at bus $(bus_fr_id)")
             end
 
             if dcline["vt"][c] != bus_to["vm"][c]
-                Memento.warn(_LOGGER, "the $(cnd_str)to bus voltage setpoint on dc line $(i) does not match the value at bus $(bus_to_id)")
+                Memento.warn(_LOGGER,
+                    "the $(cnd_str)to bus voltage setpoint on dc line $(i) does not match the value at bus $(bus_to_id)")
             end
         end
     end
 end
 
-
-"throws warnings if cost functions are malformed"
-function correct_cost_functions!(data::Dict{String,<:Any})
+"""
+throws warnings if cost functions are malformed
+"""
+function correct_cost_functions!(data::Dict{String, <:Any})
     apply_pm!(_correct_cost_functions!, data)
 end
 
-""
-function _correct_cost_functions!(pm_data::Dict{String,<:Any})
-    for (i,gen) in pm_data["gen"]
+"""
+"""
+function _correct_cost_functions!(pm_data::Dict{String, <:Any})
+    for (i, gen) in pm_data["gen"]
         _correct_cost_function!(i, gen, "generator", "pmin", "pmax")
     end
 
@@ -1894,24 +1962,26 @@ function _correct_cost_functions!(pm_data::Dict{String,<:Any})
     end
 end
 
-
-""
+"""
+"""
 function _correct_cost_function!(id, comp, type_name, pmin_key, pmax_key)
-
     if "model" in keys(comp) && "cost" in keys(comp)
         if comp["model"] == 1
             if length(comp["cost"]) != 2*comp["ncost"]
-                Memento.error(_LOGGER, "ncost of $(comp["ncost"]) not consistent with $(length(comp["cost"])) cost values on $(type_name) $(id)")
+                Memento.error(_LOGGER,
+                    "ncost of $(comp["ncost"]) not consistent with $(length(comp["cost"])) cost values on $(type_name) $(id)")
             end
             if length(comp["cost"]) < 4
-                Memento.error(_LOGGER, "cost includes $(comp["ncost"]) points, but at least two points are required on $(type_name) $(id)")
+                Memento.error(_LOGGER,
+                    "cost includes $(comp["ncost"]) points, but at least two points are required on $(type_name) $(id)")
             end
 
             _remove_pwl_cost_duplicates!(id, comp, type_name)
 
             for i in 3:2:length(comp["cost"])
-                if comp["cost"][i-2] > comp["cost"][i]
-                    Memento.error(_LOGGER, "non-increasing x values in pwl cost model on $(type_name) $(id)")
+                if comp["cost"][i - 2] > comp["cost"][i]
+                    Memento.error(_LOGGER,
+                        "non-increasing x values in pwl cost model on $(type_name) $(id)")
                 end
             end
 
@@ -1919,26 +1989,27 @@ function _correct_cost_function!(id, comp, type_name, pmin_key, pmax_key)
 
         elseif comp["model"] == 2
             if length(comp["cost"]) != comp["ncost"]
-                Memento.error(_LOGGER, "ncost of $(comp["ncost"]) not consistent with $(length(comp["cost"])) cost values on $(type_name) $(id)")
+                Memento.error(_LOGGER,
+                    "ncost of $(comp["ncost"]) not consistent with $(length(comp["cost"])) cost values on $(type_name) $(id)")
             end
         else
             Memento.warn(_LOGGER, "Unknown cost model of type $(comp["model"]) on $(type_name) $(id)")
         end
     end
-
 end
 
-
-"checks that each point in the a pwl function is unqiue, simplifies the function if duplicates appear"
-function _remove_pwl_cost_duplicates!(id, comp, type_name; tolerance=1e-2)
+"""
+checks that each point in the a pwl function is unqiue, simplifies the function if duplicates appear
+"""
+function _remove_pwl_cost_duplicates!(id, comp, type_name; tolerance = 1e-2)
     @assert comp["model"] == 1
 
     unique_costs = Float64[comp["cost"][1], comp["cost"][2]]
     for i in 3:2:length(comp["cost"])
-        x1 = unique_costs[end-1]
+        x1 = unique_costs[end - 1]
         y1 = unique_costs[end]
-        x2 = comp["cost"][i+0]
-        y2 = comp["cost"][i+1]
+        x2 = comp["cost"][i + 0]
+        y2 = comp["cost"][i + 1]
         if !(isapprox(x1, x2) && isapprox(y1, y2))
             push!(unique_costs, x2)
             push!(unique_costs, y2)
@@ -1948,12 +2019,13 @@ function _remove_pwl_cost_duplicates!(id, comp, type_name; tolerance=1e-2)
     # in the event that all of the given points are the same
     # this code ensures that at least two of the points remain
     if length(unique_costs) <= 2
-        push!(unique_costs, comp["cost"][end-1])
+        push!(unique_costs, comp["cost"][end - 1])
         push!(unique_costs, comp["cost"][end])
     end
 
     if length(unique_costs) < length(comp["cost"])
-        Memento.warn(_LOGGER, "removing duplicate points from pwl cost on $(type_name) $(id), $(comp["cost"]) -> $(unique_costs)")
+        Memento.warn(_LOGGER,
+            "removing duplicate points from pwl cost on $(type_name) $(id), $(comp["cost"]) -> $(unique_costs)")
         comp["cost"] = unique_costs
         comp["ncost"] = div(length(unique_costs), 2)
         return true
@@ -1962,9 +2034,10 @@ function _remove_pwl_cost_duplicates!(id, comp, type_name; tolerance=1e-2)
     return false
 end
 
-
-"checks the slope of each segment in a pwl function, simplifies the function if the slope changes is below a tolerance"
-function _simplify_pwl_cost!(id, comp, type_name; tolerance=1e-2)
+"""
+checks the slope of each segment in a pwl function, simplifies the function if the slope changes is below a tolerance
+"""
+function _simplify_pwl_cost!(id, comp, type_name; tolerance = 1e-2)
     @assert comp["model"] == 1
 
     slopes = Float64[]
@@ -1974,10 +2047,10 @@ function _simplify_pwl_cost!(id, comp, type_name; tolerance=1e-2)
     x2, y2 = 0.0, 0.0
 
     for i in 3:2:length(comp["cost"])
-        x1 = comp["cost"][i-2]
-        y1 = comp["cost"][i-1]
-        x2 = comp["cost"][i-0]
-        y2 = comp["cost"][i+1]
+        x1 = comp["cost"][i - 2]
+        y1 = comp["cost"][i - 1]
+        x2 = comp["cost"][i - 0]
+        y2 = comp["cost"][i + 1]
 
         m = (y2 - y1)/(x2 - x1)
 
@@ -2002,15 +2075,16 @@ function _simplify_pwl_cost!(id, comp, type_name; tolerance=1e-2)
     return false
 end
 
-
-"trims zeros from higher order cost terms"
-function simplify_cost_terms!(data::Dict{String,<:Any})
+"""
+trims zeros from higher order cost terms
+"""
+function simplify_cost_terms!(data::Dict{String, <:Any})
     apply_pm!(_simplify_cost_terms!, data)
 end
 
-""
-function _simplify_cost_terms!(pm_data::Dict{String,<:Any})
-
+"""
+"""
+function _simplify_cost_terms!(pm_data::Dict{String, <:Any})
     if haskey(pm_data, "gen")
         for (i, gen) in pm_data["gen"]
             if haskey(gen, "model") && gen["model"] == 2
@@ -2024,7 +2098,8 @@ function _simplify_cost_terms!(pm_data::Dict{String,<:Any})
                 end
                 if length(gen["cost"]) != ncost
                     gen["ncost"] = length(gen["cost"])
-                    Memento.info(_LOGGER, "removing $(ncost - gen["ncost"]) cost terms from generator $(i): $(gen["cost"])")
+                    Memento.info(_LOGGER,
+                        "removing $(ncost - gen["ncost"]) cost terms from generator $(i): $(gen["cost"])")
                 end
             end
         end
@@ -2043,17 +2118,18 @@ function _simplify_cost_terms!(pm_data::Dict{String,<:Any})
                 end
                 if length(dcline["cost"]) != ncost
                     dcline["ncost"] = length(dcline["cost"])
-                    Memento.info(_LOGGER, "removing $(ncost - dcline["ncost"]) cost terms from dcline $(i): $(dcline["cost"])")
+                    Memento.info(_LOGGER,
+                        "removing $(ncost - dcline["ncost"]) cost terms from dcline $(i): $(dcline["cost"])")
                 end
             end
         end
     end
-
 end
 
-
-"ensures all polynomial costs functions have the same number of terms"
-function standardize_cost_terms!(data::Dict{String,<:Any}; order=-1)
+"""
+ensures all polynomial costs functions have the same number of terms
+"""
+function standardize_cost_terms!(data::Dict{String, <:Any}; order = -1)
     pm_data = get_pm_data(data)
 
     comp_max_order = 1
@@ -2100,14 +2176,14 @@ function standardize_cost_terms!(data::Dict{String,<:Any}; order=-1)
                 end
             end
         end
-
     end
 
     if comp_max_order <= order+1
         comp_max_order = order+1
     else
         if order != -1 # if not the default
-            Memento.warn(_LOGGER, "a standard cost order of $(order) was requested but the given data requires an order of at least $(comp_max_order-1)")
+            Memento.warn(_LOGGER,
+                "a standard cost order of $(order) was requested but the given data requires an order of at least $(comp_max_order-1)")
         end
     end
 
@@ -2119,12 +2195,12 @@ function standardize_cost_terms!(data::Dict{String,<:Any}; order=-1)
             _standardize_cost_terms!(network["dcline"], comp_max_order, "dcline")
         end
     end
-
 end
 
-
-"ensures all polynomial costs functions have at exactly comp_order terms"
-function _standardize_cost_terms!(components::Dict{String,<:Any}, comp_order::Int, cost_comp_name::String)
+"""
+ensures all polynomial costs functions have at exactly comp_order terms
+"""
+function _standardize_cost_terms!(components::Dict{String, <:Any}, comp_order::Int, cost_comp_name::String)
     modified = Set{Int}()
     for (i, comp) in components
         if haskey(comp, "model") && comp["model"] == 2 && length(comp["cost"]) != comp_order
@@ -2138,16 +2214,13 @@ function _standardize_cost_terms!(components::Dict{String,<:Any}, comp_order::In
             comp["ncost"] = comp_order
             #println("std gen cost: $(comp["cost"])")
 
-            Memento.info(_LOGGER, "updated $(cost_comp_name) $(comp["index"]) cost function with order $(length(current_cost)) to a function of order $(comp_order): $(comp["cost"])")
+            Memento.info(_LOGGER,
+                "updated $(cost_comp_name) $(comp["index"]) cost function with order $(length(current_cost)) to a function of order $(comp_order): $(comp["cost"])")
             push!(modified, comp["index"])
         end
     end
     return modified
 end
-
-
-
-
 
 """
 propagates inactive active network buses status to attached components so that
@@ -2170,10 +2243,10 @@ function propagate_topology_status!(data::Dict{String, <:Any})
     return revised
 end
 
-
-""
-function _propagate_topology_status!(data::Dict{String,<:Any})
-    buses = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
+"""
+"""
+function _propagate_topology_status!(data::Dict{String, <:Any})
+    buses = Dict(bus["bus_i"] => bus for (i, bus) in data["bus"])
 
     # compute what active components are incident to each bus
     incident_load = bus_load_lookup(data["load"], data["bus"])
@@ -2200,67 +2273,69 @@ function _propagate_topology_status!(data::Dict{String,<:Any})
         incident_active_strg[i] = [strg for strg in strg_list if strg["status"] != 0]
     end
 
-    incident_branch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
-    for (i,branch) in data["branch"]
+    incident_branch = Dict(bus["bus_i"] => [] for (i, bus) in data["bus"])
+    for (i, branch) in data["branch"]
         push!(incident_branch[branch["f_bus"]], branch)
         push!(incident_branch[branch["t_bus"]], branch)
     end
 
-    incident_dcline = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
-    for (i,dcline) in data["dcline"]
+    incident_dcline = Dict(bus["bus_i"] => [] for (i, bus) in data["bus"])
+    for (i, dcline) in data["dcline"]
         push!(incident_dcline[dcline["f_bus"]], dcline)
         push!(incident_dcline[dcline["t_bus"]], dcline)
     end
 
-    incident_switch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
-    for (i,switch) in data["switch"]
+    incident_switch = Dict(bus["bus_i"] => [] for (i, bus) in data["bus"])
+    for (i, switch) in data["switch"]
         push!(incident_switch[switch["f_bus"]], switch)
         push!(incident_switch[switch["t_bus"]], switch)
     end
 
-
     revised = false
 
-    for (i,branch) in data["branch"]
+    for (i, branch) in data["branch"]
         if branch["br_status"] != 0
             f_bus = buses[branch["f_bus"]]
             t_bus = buses[branch["t_bus"]]
 
             if f_bus["bus_type"] == 4 || t_bus["bus_type"] == 4
-                Memento.info(_LOGGER, "deactivating branch $(i):($(branch["f_bus"]),$(branch["t_bus"])) due to connecting bus status")
+                Memento.info(_LOGGER,
+                    "deactivating branch $(i):($(branch["f_bus"]),$(branch["t_bus"])) due to connecting bus status")
                 branch["br_status"] = 0
                 revised = true
             end
         end
     end
 
-    for (i,dcline) in data["dcline"]
+    for (i, dcline) in data["dcline"]
         if dcline["br_status"] != 0
             f_bus = buses[dcline["f_bus"]]
             t_bus = buses[dcline["t_bus"]]
 
             if f_bus["bus_type"] == 4 || t_bus["bus_type"] == 4
-                Memento.info(_LOGGER, "deactivating dcline $(i):($(dcline["f_bus"]),$(dcline["t_bus"])) due to connecting bus status")
+                Memento.info(_LOGGER,
+                    "deactivating dcline $(i):($(dcline["f_bus"]),$(dcline["t_bus"])) due to connecting bus status")
                 dcline["br_status"] = 0
                 revised = true
             end
         end
     end
 
-    for (i,switch) in data["switch"]
+    for (i, switch) in data["switch"]
         if switch["status"] != 0
             f_bus = buses[switch["f_bus"]]
             t_bus = buses[switch["t_bus"]]
 
             if f_bus["bus_type"] == 4 || t_bus["bus_type"] == 4
-                Memento.info(_LOGGER, "deactivating switch $(i):($(switch["f_bus"]),$(switch["t_bus"])) due to connecting bus status")
+                Memento.info(_LOGGER,
+                    "deactivating switch $(i):($(switch["f_bus"]),$(switch["t_bus"])) due to connecting bus status")
                 switch["status"] = 0
                 revised = true
             end
         end
     end
 
-    for (i,bus) in buses
+    for (i, bus) in buses
         if bus["bus_type"] == 4
             for load in incident_active_load[i]
                 if load["status"] != 0
@@ -2299,8 +2374,6 @@ function _propagate_topology_status!(data::Dict{String,<:Any})
     return revised
 end
 
-
-
 """
 removes buses with single branch connections and without any other attached
 components.  Also removes connected components without suffuceint generation
@@ -2323,14 +2396,14 @@ function deactivate_isolated_components!(data::Dict{String, <:Any})
     return revised
 end
 
-
-""
-function _deactivate_isolated_components!(data::Dict{String,<:Any})
-    buses = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
+"""
+"""
+function _deactivate_isolated_components!(data::Dict{String, <:Any})
+    buses = Dict(bus["bus_i"] => bus for (i, bus) in data["bus"])
 
     revised = false
 
-    for (i,load) in data["load"]
+    for (i, load) in data["load"]
         if load["status"] != 0 && all(load["pd"] .== 0.0) && all(load["qd"] .== 0.0)
             Memento.info(_LOGGER, "deactivating load $(load["index"]) due to zero pd and qd")
             load["status"] = 0
@@ -2338,14 +2411,13 @@ function _deactivate_isolated_components!(data::Dict{String,<:Any})
         end
     end
 
-    for (i,shunt) in data["shunt"]
+    for (i, shunt) in data["shunt"]
         if shunt["status"] != 0 && all(shunt["gs"] .== 0.0) && all(shunt["bs"] .== 0.0)
             Memento.info(_LOGGER, "deactivating shunt $(shunt["index"]) due to zero gs and bs")
             shunt["status"] = 0
             revised = true
         end
     end
-
 
     # compute what active components are incident to each bus
     incident_load = bus_load_lookup(data["load"], data["bus"])
@@ -2372,42 +2444,52 @@ function _deactivate_isolated_components!(data::Dict{String,<:Any})
         incident_active_strg[i] = [strg for strg in strg_list if strg["status"] != 0]
     end
 
-
-    incident_branch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
-    for (i,branch) in data["branch"]
+    incident_branch = Dict(bus["bus_i"] => [] for (i, bus) in data["bus"])
+    for (i, branch) in data["branch"]
         push!(incident_branch[branch["f_bus"]], branch)
         push!(incident_branch[branch["t_bus"]], branch)
     end
 
-    incident_dcline = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
-    for (i,dcline) in data["dcline"]
+    incident_dcline = Dict(bus["bus_i"] => [] for (i, bus) in data["bus"])
+    for (i, dcline) in data["dcline"]
         push!(incident_dcline[dcline["f_bus"]], dcline)
         push!(incident_dcline[dcline["t_bus"]], dcline)
     end
 
-    incident_switch = Dict(bus["bus_i"] => [] for (i,bus) in data["bus"])
-    for (i,switch) in data["switch"]
+    incident_switch = Dict(bus["bus_i"] => [] for (i, bus) in data["bus"])
+    for (i, switch) in data["switch"]
         push!(incident_switch[switch["f_bus"]], switch)
         push!(incident_switch[switch["t_bus"]], switch)
     end
-
 
     changed = true
     while changed
         changed = false
 
-        for (i,bus) in buses
+        for (i, bus) in buses
             if bus["bus_type"] != 4
                 incident_active_edge = 0
-                if length(incident_branch[i]) + length(incident_dcline[i]) + length(incident_switch[i]) > 0
-                    incident_branch_count = sum([0; [branch["br_status"] for branch in incident_branch[i]]])
-                    incident_dcline_count = sum([0; [dcline["br_status"] for dcline in incident_dcline[i]]])
-                    incident_switch_count = sum([0; [switch["status"] for switch in incident_switch[i]]])
-                    incident_active_edge = incident_branch_count + incident_dcline_count + incident_switch_count
+                if length(incident_branch[i]) + length(incident_dcline[i]) +
+                   length(incident_switch[i]) > 0
+                    incident_branch_count = sum([0;
+                                                 [branch["br_status"]
+                                                  for branch in incident_branch[i]]])
+                    incident_dcline_count = sum([0;
+                                                 [dcline["br_status"]
+                                                  for dcline in incident_dcline[i]]])
+                    incident_switch_count = sum([0;
+                                                 [switch["status"]
+                                                  for switch in incident_switch[i]]])
+                    incident_active_edge = incident_branch_count + incident_dcline_count +
+                                           incident_switch_count
                 end
 
-                if incident_active_edge == 1 && length(incident_active_gen[i]) == 0 && length(incident_active_load[i]) == 0 && length(incident_active_shunt[i]) == 0 && length(incident_active_strg[i]) == 0
-                    Memento.info(_LOGGER, "deactivating bus $(i) due to dangling bus without generation, load or storage")
+                if incident_active_edge == 1 && length(incident_active_gen[i]) == 0 &&
+                   length(incident_active_load[i]) == 0 &&
+                   length(incident_active_shunt[i]) == 0 &&
+                   length(incident_active_strg[i]) == 0
+                    Memento.info(_LOGGER,
+                        "deactivating bus $(i) due to dangling bus without generation, load or storage")
                     bus["bus_type"] = 4
                     revised = true
                     changed = true
@@ -2416,45 +2498,46 @@ function _deactivate_isolated_components!(data::Dict{String,<:Any})
         end
 
         if changed
-            for (i,branch) in data["branch"]
+            for (i, branch) in data["branch"]
                 if branch["br_status"] != 0
                     f_bus = buses[branch["f_bus"]]
                     t_bus = buses[branch["t_bus"]]
 
                     if f_bus["bus_type"] == 4 || t_bus["bus_type"] == 4
-                        Memento.info(_LOGGER, "deactivating branch $(i):($(branch["f_bus"]),$(branch["t_bus"])) due to connecting bus status")
+                        Memento.info(_LOGGER,
+                            "deactivating branch $(i):($(branch["f_bus"]),$(branch["t_bus"])) due to connecting bus status")
                         branch["br_status"] = 0
                     end
                 end
             end
 
-            for (i,dcline) in data["dcline"]
+            for (i, dcline) in data["dcline"]
                 if dcline["br_status"] != 0
                     f_bus = buses[dcline["f_bus"]]
                     t_bus = buses[dcline["t_bus"]]
 
                     if f_bus["bus_type"] == 4 || t_bus["bus_type"] == 4
-                        Memento.info(_LOGGER, "deactivating dcline $(i):($(dcline["f_bus"]),$(dcline["t_bus"])) due to connecting bus status")
+                        Memento.info(_LOGGER,
+                            "deactivating dcline $(i):($(dcline["f_bus"]),$(dcline["t_bus"])) due to connecting bus status")
                         dcline["br_status"] = 0
                     end
                 end
             end
 
-            for (i,switch) in data["switch"]
+            for (i, switch) in data["switch"]
                 if switch["status"] != 0
                     f_bus = buses[switch["f_bus"]]
                     t_bus = buses[switch["t_bus"]]
 
                     if f_bus["bus_type"] == 4 || t_bus["bus_type"] == 4
-                        Memento.info(_LOGGER, "deactivating switch $(i):($(switch["f_bus"]),$(switch["t_bus"])) due to connecting bus status")
+                        Memento.info(_LOGGER,
+                            "deactivating switch $(i):($(switch["f_bus"]),$(switch["t_bus"])) due to connecting bus status")
                         switch["status"] = 0
                     end
                 end
             end
         end
-
     end
-
 
     ccs = calc_connected_components(data)
 
@@ -2476,8 +2559,10 @@ function _deactivate_isolated_components!(data::Dict{String,<:Any})
         active_gen_count = sum(cc_active_gens)
         active_strg_count = sum(cc_active_strg)
 
-        if (active_load_count == 0 && active_shunt_count == 0 && active_strg_count == 0) || active_gen_count == 0
-            Memento.info(_LOGGER, "deactivating connected component $(cc) due to isolation without generation, load or storage")
+        if (active_load_count == 0 && active_shunt_count == 0 && active_strg_count == 0) ||
+           active_gen_count == 0
+            Memento.info(_LOGGER,
+                "deactivating connected component $(cc) due to isolation without generation, load or storage")
             for i in cc
                 buses[i]["bus_type"] = 4
             end
@@ -2488,14 +2573,13 @@ function _deactivate_isolated_components!(data::Dict{String,<:Any})
     return revised
 end
 
-
 """
 attempts to deactive components that are not needed in the network by repeated
 calls to `propagate_topology_status!` and `deactivate_isolated_components!`
 
 warning: this implementation has quadratic complexity, in the worst case
 """
-function simplify_network!(data::Dict{String,<:Any})
+function simplify_network!(data::Dict{String, <:Any})
     revised = true
     iteration = 0
 
@@ -2510,7 +2594,6 @@ function simplify_network!(data::Dict{String,<:Any})
     return revised
 end
 
-
 """
 determines the largest connected component of the network and turns everything else off
 """
@@ -2518,19 +2601,20 @@ function select_largest_component!(data::Dict{String, <:Any})
     apply_pm!(_select_largest_component!, data)
 end
 
-""
-function _select_largest_component!(data::Dict{String,<:Any})
+"""
+"""
+function _select_largest_component!(data::Dict{String, <:Any})
     ccs = calc_connected_components(data)
 
     if length(ccs) > 1
         Memento.info(_LOGGER, "found $(length(ccs)) components")
 
-        ccs_order = sort(collect(ccs); by=length)
+        ccs_order = sort(collect(ccs); by = length)
         largest_cc = ccs_order[end]
 
         Memento.info(_LOGGER, "largest component has $(length(largest_cc)) buses")
 
-        for (i,bus) in data["bus"]
+        for (i, bus) in data["bus"]
             if bus["bus_type"] != 4 && !(bus["index"] in largest_cc)
                 bus["bus_type"] = 4
                 Memento.info(_LOGGER, "deactivating bus $(i) due to small connected component")
@@ -2541,21 +2625,21 @@ function _select_largest_component!(data::Dict{String,<:Any})
     end
 end
 
-
 """
 checks that each connected components has a reference bus, if not, adds one
 """
-function correct_reference_buses!(data::Dict{String,<:Any})
+function correct_reference_buses!(data::Dict{String, <:Any})
     apply_pm!(_correct_reference_buses!, data)
 end
 
-""
-function _correct_reference_buses!(data::Dict{String,<:Any})
-    bus_lookup = Dict(bus["bus_i"] => bus for (i,bus) in data["bus"])
+"""
+"""
+function _correct_reference_buses!(data::Dict{String, <:Any})
+    bus_lookup = Dict(bus["bus_i"] => bus for (i, bus) in data["bus"])
     bus_gen = bus_gen_lookup(data["gen"], data["bus"])
 
     ccs = calc_connected_components(data)
-    ccs_order = sort(collect(ccs); by=length)
+    ccs_order = sort(collect(ccs); by = length)
 
     bus_to_cc = Dict()
     for (i, cc) in enumerate(ccs_order)
@@ -2564,7 +2648,7 @@ function _correct_reference_buses!(data::Dict{String,<:Any})
         end
     end
 
-    cc_gens = Dict(i => Dict() for (i, cc) in enumerate(ccs_order) )
+    cc_gens = Dict(i => Dict() for (i, cc) in enumerate(ccs_order))
     for (i, gen) in data["gen"]
         bus_id = gen["gen_bus"]
         if haskey(bus_to_cc, bus_id)
@@ -2577,7 +2661,6 @@ function _correct_reference_buses!(data::Dict{String,<:Any})
         correct_component_refrence_bus!(cc, bus_lookup, cc_gens[i])
     end
 end
-
 
 """
 checks that a connected component has a reference bus, if not, tries to add one
@@ -2594,65 +2677,73 @@ function correct_component_refrence_bus!(component_bus_ids, bus_lookup, componen
     if length(refrence_buses) == 0
         Memento.warn(_LOGGER, "no reference bus found in connected component $(component_bus_ids)")
 
-        component_gens_active = Dict(k => v for (k,v) in component_gens if v["gen_status"] != 0)
+        component_gens_active = Dict(k => v
+        for (k, v) in component_gens if v["gen_status"] != 0)
 
         if length(component_gens_active) > 0
             big_gen = _biggest_generator(component_gens_active)
             gen_bus = bus_lookup[big_gen["gen_bus"]]
             gen_bus["bus_type"] = 3
-            Memento.warn(_LOGGER, "setting bus $(gen_bus["index"]) as reference bus in connected component $(component_bus_ids), based on generator $(big_gen["index"])")
+            Memento.warn(_LOGGER,
+                "setting bus $(gen_bus["index"]) as reference bus in connected component $(component_bus_ids), based on generator $(big_gen["index"])")
         else
-            Memento.warn(_LOGGER, "no active generators found in connected component $(component_bus_ids), try running propagate_topology_status!")
+            Memento.warn(_LOGGER,
+                "no active generators found in connected component $(component_bus_ids), try running propagate_topology_status!")
         end
     end
 end
 
-
-"builds a lookup list of what generators are connected to a given bus"
-function bus_gen_lookup(gen_data::Dict{String,<:Any}, bus_data::Dict{String,<:Any})
-    bus_gen = Dict(bus["bus_i"] => [] for (i,bus) in bus_data)
-    for (i,gen) in gen_data
+"""
+builds a lookup list of what generators are connected to a given bus
+"""
+function bus_gen_lookup(gen_data::Dict{String, <:Any}, bus_data::Dict{String, <:Any})
+    bus_gen = Dict(bus["bus_i"] => [] for (i, bus) in bus_data)
+    for (i, gen) in gen_data
         push!(bus_gen[gen["gen_bus"]], gen)
     end
     return bus_gen
 end
 
-
-"builds a lookup list of what loads are connected to a given bus"
-function bus_load_lookup(load_data::Dict{String,<:Any}, bus_data::Dict{String,<:Any})
-    bus_load = Dict(bus["bus_i"] => [] for (i,bus) in bus_data)
-    for (i,load) in load_data
+"""
+builds a lookup list of what loads are connected to a given bus
+"""
+function bus_load_lookup(load_data::Dict{String, <:Any}, bus_data::Dict{String, <:Any})
+    bus_load = Dict(bus["bus_i"] => [] for (i, bus) in bus_data)
+    for (i, load) in load_data
         push!(bus_load[load["load_bus"]], load)
     end
     return bus_load
 end
 
-
-"builds a lookup list of what shunts are connected to a given bus"
-function bus_shunt_lookup(shunt_data::Dict{String,<:Any}, bus_data::Dict{String,<:Any})
-    bus_shunt = Dict(bus["bus_i"] => [] for (i,bus) in bus_data)
-    for (i,shunt) in shunt_data
+"""
+builds a lookup list of what shunts are connected to a given bus
+"""
+function bus_shunt_lookup(shunt_data::Dict{String, <:Any}, bus_data::Dict{String, <:Any})
+    bus_shunt = Dict(bus["bus_i"] => [] for (i, bus) in bus_data)
+    for (i, shunt) in shunt_data
         push!(bus_shunt[shunt["shunt_bus"]], shunt)
     end
     return bus_shunt
 end
 
-
-"builds a lookup list of what storage is connected to a given bus"
-function bus_storage_lookup(storage_data::Dict{String,<:Any}, bus_data::Dict{String,<:Any})
-    bus_storage = Dict(bus["bus_i"] => [] for (i,bus) in bus_data)
-    for (i,storage) in storage_data
+"""
+builds a lookup list of what storage is connected to a given bus
+"""
+function bus_storage_lookup(storage_data::Dict{String, <:Any}, bus_data::Dict{
+        String, <:Any})
+    bus_storage = Dict(bus["bus_i"] => [] for (i, bus) in bus_data)
+    for (i, storage) in storage_data
         push!(bus_storage[storage["storage_bus"]], storage)
     end
     return bus_storage
 end
 
-
 """
 computes the connected components of the network graph
 returns a set of sets of bus ids, each set is a connected component
 """
-function calc_connected_components(data::Dict{String,<:Any}; edges=["branch", "dcline", "switch"])
+function calc_connected_components(data::Dict{String, <:Any}; edges = [
+        "branch", "dcline", "switch"])
     pm_data = get_pm_data(data)
 
     if _IM.ismultinetwork(pm_data)
@@ -2660,14 +2751,15 @@ function calc_connected_components(data::Dict{String,<:Any}; edges=["branch", "d
     end
 
     active_bus = Dict(x for x in pm_data["bus"] if x.second["bus_type"] != 4)
-    active_bus_ids = Set{Int}([bus["bus_i"] for (i,bus) in active_bus])
+    active_bus_ids = Set{Int}([bus["bus_i"] for (i, bus) in active_bus])
 
     neighbors = Dict(i => Int[] for i in active_bus_ids)
     for comp_type in edges
         status_key = get(pm_component_status, comp_type, "status")
         status_inactive = get(pm_component_status_inactive, comp_type, 0)
         for edge in values(get(pm_data, comp_type, Dict()))
-            if get(edge, status_key, 1) != status_inactive && edge["f_bus"] in active_bus_ids && edge["t_bus"] in active_bus_ids
+            if get(edge, status_key, 1) != status_inactive &&
+               edge["f_bus"] in active_bus_ids && edge["t_bus"] in active_bus_ids
                 push!(neighbors[edge["f_bus"]], edge["t_bus"])
                 push!(neighbors[edge["t_bus"]], edge["f_bus"])
             end
@@ -2688,7 +2780,6 @@ function calc_connected_components(data::Dict{String,<:Any}; edges=["branch", "d
     return ccs
 end
 
-
 """
 DFS on a graph
 """
@@ -2696,7 +2787,7 @@ function _cc_dfs(i, neighbors, component_lookup, touched)
     push!(touched, i)
     for j in neighbors[i]
         if !(j in touched)
-            for k in  component_lookup[j]
+            for k in component_lookup[j]
                 push!(component_lookup[i], k)
             end
             for k in component_lookup[j]
@@ -2707,44 +2798,41 @@ function _cc_dfs(i, neighbors, component_lookup, touched)
     end
 end
 
-
-
 """
 given a network data dict and a mapping of current-bus-ids to new-bus-ids
 modifies the data dict to reflect the proposed new bus ids.
 """
-function update_bus_ids!(data::Dict{String,<:Any}, bus_id_map::Dict{Int,Int}; injective=true)
+function update_bus_ids!(data::Dict{String, <:Any}, bus_id_map::Dict{Int, Int}; injective = true)
     data_it = _IM.ismultiinfrastructure(data) ? data["it"][pm_it_name] : data
 
     if _IM.ismultinetwork(data_it) && apply_to_subnetworks
         for (nw, nw_data) in data_it["nw"]
-            _update_bus_ids!(nw_data, bus_id_map; injective=injective)
+            _update_bus_ids!(nw_data, bus_id_map; injective = injective)
         end
     else
-        _update_bus_ids!(data_it, bus_id_map; injective=injective)
+        _update_bus_ids!(data_it, bus_id_map; injective = injective)
     end
 end
 
-
-function _update_bus_ids!(data::Dict{String,<:Any}, bus_id_map::Dict{Int,Int}; injective=true)
+function _update_bus_ids!(data::Dict{String, <:Any}, bus_id_map::Dict{Int, Int}; injective = true)
     # verify bus id map is injective
     if injective
         new_bus_ids = Set{Int}()
-        for (i,bus) in data["bus"]
+        for (i, bus) in data["bus"]
             new_id = get(bus_id_map, bus["index"], bus["index"])
             if !(new_id in new_bus_ids)
                 push!(new_bus_ids, new_id)
             else
-                Memento.error(_LOGGER, "bus id mapping given to update_bus_ids has an id clash on new bus id $(new_id)")
+                Memento.error(_LOGGER,
+                    "bus id mapping given to update_bus_ids has an id clash on new bus id $(new_id)")
             end
         end
     end
 
-
     # start renumbering process
-    renumbered_bus_dict = Dict{String,Any}()
+    renumbered_bus_dict = Dict{String, Any}()
 
-    for (i,bus) in data["bus"]
+    for (i, bus) in data["bus"]
         new_id = get(bus_id_map, bus["index"], bus["index"])
         bus["index"] = new_id
         bus["bus_i"] = new_id
@@ -2752,7 +2840,6 @@ function _update_bus_ids!(data::Dict{String,<:Any}, bus_id_map::Dict{Int,Int}; i
     end
 
     data["bus"] = renumbered_bus_dict
-
 
     # update bus numbering in dependent components
     for (i, load) in data["load"]
@@ -2770,7 +2857,6 @@ function _update_bus_ids!(data::Dict{String,<:Any}, bus_id_map::Dict{Int,Int}; i
     for (i, strg) in data["storage"]
         strg["storage_bus"] = get(bus_id_map, strg["storage_bus"], strg["storage_bus"])
     end
-
 
     for (i, switch) in data["switch"]
         switch["f_bus"] = get(bus_id_map, switch["f_bus"], switch["f_bus"])
@@ -2797,28 +2883,27 @@ function _update_bus_ids!(data::Dict{String,<:Any}, bus_id_map::Dict{Int,Int}; i
     end
 end
 
-
-
 """
 given a network data dict merges buses that are connected by closed switches
 converting the dataset into a pure bus-branch model.
 """
-function resolve_swithces!(data::Dict{String,<:Any})
+function resolve_swithces!(data::Dict{String, <:Any})
     apply_pm!(_resolve_swithces!, data)
 end
 
-""
-function _resolve_swithces!(data::Dict{String,<:Any})
+"""
+"""
+function _resolve_swithces!(data::Dict{String, <:Any})
     if length(data["switch"]) <= 0
         return
     end
 
-    bus_sets = Dict{Int,Set{Int}}()
+    bus_sets = Dict{Int, Set{Int}}()
 
     switch_status_key = pm_component_status["switch"]
     switch_status_value = pm_component_status_inactive["switch"]
 
-    for (i,switch) in data["switch"]
+    for (i, switch) in data["switch"]
         if switch[switch_status_key] != switch_status_value && switch["state"] == 1
             if !haskey(bus_sets, switch["f_bus"])
                 bus_sets[switch["f_bus"]] = Set{Int}([switch["f_bus"]])
@@ -2827,16 +2912,18 @@ function _resolve_swithces!(data::Dict{String,<:Any})
                 bus_sets[switch["t_bus"]] = Set{Int}([switch["t_bus"]])
             end
 
-            merged_set = Set{Int}([bus_sets[switch["f_bus"]]..., bus_sets[switch["t_bus"]]...])
+            merged_set = Set{Int}([
+                bus_sets[switch["f_bus"]]..., bus_sets[switch["t_bus"]]...])
             bus_sets[switch["f_bus"]] = merged_set
             bus_sets[switch["t_bus"]] = merged_set
         end
     end
 
-    bus_id_map = Dict{Int,Int}()
+    bus_id_map = Dict{Int, Int}()
     for bus_set in Set(values(bus_sets))
         bus_min = minimum(bus_set)
-        Memento.info(_LOGGER, "merged buses $(join(bus_set, ",")) in to bus $(bus_min) based on switch status")
+        Memento.info(_LOGGER,
+            "merged buses $(join(bus_set, ",")) in to bus $(bus_min) based on switch status")
         for i in bus_set
             if i != bus_min
                 bus_id_map[i] = bus_min
@@ -2844,22 +2931,24 @@ function _resolve_swithces!(data::Dict{String,<:Any})
         end
     end
 
-    update_bus_ids!(data, bus_id_map, injective=false)
+    update_bus_ids!(data, bus_id_map, injective = false)
 
     for (i, branch) in data["branch"]
         if branch["f_bus"] == branch["t_bus"]
-            Memento.warn(_LOGGER, "switch removal resulted in both sides of branch $(i) connect to bus $(branch["f_bus"]), deactivating branch")
+            Memento.warn(_LOGGER,
+                "switch removal resulted in both sides of branch $(i) connect to bus $(branch["f_bus"]), deactivating branch")
             branch[pm_component_status["branch"]] = pm_component_status_inactive["branch"]
         end
     end
 
     for (i, dcline) in data["dcline"]
         if dcline["f_bus"] == dcline["t_bus"]
-            Memento.warn(_LOGGER, "switch removal resulted in both sides of dcline $(i) connect to bus $(branch["f_bus"]), deactivating dcline")
+            Memento.warn(_LOGGER,
+                "switch removal resulted in both sides of dcline $(i) connect to bus $(branch["f_bus"]), deactivating dcline")
             branch[pm_component_status["dcline"]] = pm_component_status_inactive["dcline"]
         end
     end
 
     Memento.info(_LOGGER, "removed $(length(data["switch"])) switch components")
-    data["switch"] = Dict{String,Any}()
+    data["switch"] = Dict{String, Any}()
 end

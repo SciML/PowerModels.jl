@@ -5,13 +5,15 @@
 #
 ######
 
-
-"opf using current limits instead of thermal limits, tests constraint_current_limit"
+"""
+opf using current limits instead of thermal limits, tests constraint_current_limit
+"""
 function _solve_opf_cl(file, model_type::Type, optimizer; kwargs...)
     return solve_model(file, model_type, optimizer, _build_opf_cl; kwargs...)
 end
 
-""
+"""
+"""
 function _build_opf_cl(pm::AbstractPowerModel)
     variable_bus_voltage(pm)
     variable_gen_power(pm)
@@ -44,13 +46,15 @@ function _build_opf_cl(pm::AbstractPowerModel)
     end
 end
 
-
-"opf with fixed switches"
+"""
+opf with fixed switches
+"""
 function _solve_opf_sw(file, model_constructor, optimizer; kwargs...)
     return solve_model(file, model_constructor, optimizer, _build_opf_sw; kwargs...)
 end
 
-""
+"""
+"""
 function _build_opf_sw(pm::AbstractPowerModel)
     variable_bus_voltage(pm)
     variable_gen_power(pm)
@@ -90,13 +94,16 @@ function _build_opf_sw(pm::AbstractPowerModel)
     end
 end
 
-
-"opf with controlable switches"
+"""
+opf with controlable switches
+"""
 function _solve_oswpf(file, model_constructor, optimizer; kwargs...)
-    return solve_model(file, model_constructor, optimizer, _build_oswpf; ref_extensions=[ref_add_on_off_va_bounds!], kwargs...)
+    return solve_model(file, model_constructor, optimizer, _build_oswpf;
+        ref_extensions = [ref_add_on_off_va_bounds!], kwargs...)
 end
 
-""
+"""
+"""
 function _build_oswpf(pm::AbstractPowerModel)
     variable_bus_voltage(pm)
     variable_gen_power(pm)
@@ -139,13 +146,16 @@ function _build_oswpf(pm::AbstractPowerModel)
     end
 end
 
-
-"opf with controlable switches, node breaker"
+"""
+opf with controlable switches, node breaker
+"""
 function _solve_oswpf_nb(file, model_constructor, optimizer; kwargs...)
-    return solve_model(file, model_constructor, optimizer, _build_oswpf_nb; ref_extensions=[ref_add_on_off_va_bounds!], kwargs...)
+    return solve_model(file, model_constructor, optimizer, _build_oswpf_nb;
+        ref_extensions = [ref_add_on_off_va_bounds!], kwargs...)
 end
 
-""
+"""
+"""
 function _build_oswpf_nb(pm::AbstractPowerModel)
     variable_bus_voltage_on_off(pm)
     variable_gen_power(pm)
@@ -198,14 +208,14 @@ function _build_oswpf_nb(pm::AbstractPowerModel)
 
         bus_arcs_sw_fr = ref(pm, :bus_arcs_sw, bus_fr)
         if length(bus_arcs_sw_fr) == 1
-            for (sw,i,j) in bus_arcs_sw_fr
+            for (sw, i, j) in bus_arcs_sw_fr
                 push!(bus_switches, sw)
             end
         end
 
         bus_arcs_sw_to = ref(pm, :bus_arcs_sw, bus_to)
         if length(bus_arcs_sw_to) == 1
-            for (sw,i,j) in bus_arcs_sw_to
+            for (sw, i, j) in bus_arcs_sw_to
                 push!(bus_switches, sw)
             end
         end
@@ -219,7 +229,6 @@ function _build_oswpf_nb(pm::AbstractPowerModel)
     end
 end
 
-
 # a simple maximum loadability problem
 function _solve_mld(file, model_constructor, solver; kwargs...)
     return solve_model(file, model_constructor, solver, _build_mld; kwargs...)
@@ -231,8 +240,8 @@ function _build_mld(pm::AbstractPowerModel)
     variable_branch_power(pm)
     variable_dcline_power(pm)
 
-    variable_load_power_factor(pm, relax=true)
-    variable_shunt_admittance_factor(pm, relax=true)
+    variable_load_power_factor(pm, relax = true)
+    variable_shunt_admittance_factor(pm, relax = true)
 
     objective_max_loadability(pm)
 
@@ -261,13 +270,15 @@ function _build_mld(pm::AbstractPowerModel)
     end
 end
 
-
-"opf with unit commitment, tests constraint_current_limit"
+"""
+opf with unit commitment, tests constraint_current_limit
+"""
 function _solve_ucopf(file, model_type::Type, solver; kwargs...)
     return solve_model(file, model_type, solver, _build_ucopf; kwargs...)
 end
 
-""
+"""
+"""
 function _build_ucopf(pm::AbstractPowerModel)
     variable_bus_voltage(pm)
 
@@ -322,74 +333,79 @@ function _build_ucopf(pm::AbstractPowerModel)
     end
 end
 
-
-""
+"""
+"""
 function _solve_mn_opb(file, model_type::Type, optimizer; kwargs...)
-    return solve_model(file, model_type, optimizer, _build_mn_opb; ref_extensions=[ref_add_connected_components!], multinetwork=true, kwargs...)
+    return solve_model(file, model_type, optimizer, _build_mn_opb;
+        ref_extensions = [ref_add_connected_components!], multinetwork = true, kwargs...)
 end
 
-""
+"""
+"""
 function _build_mn_opb(pm::AbstractPowerModel)
     for (n, network) in nws(pm)
-        variable_gen_power(pm, nw=n)
+        variable_gen_power(pm, nw = n)
 
-        for i in ids(pm, :components, nw=n)
-            constraint_network_power_balance(pm, i, nw=n)
+        for i in ids(pm, :components, nw = n)
+            constraint_network_power_balance(pm, i, nw = n)
         end
     end
 
     objective_min_fuel_cost(pm)
 end
 
-
-""
+"""
+"""
 function _solve_mn_pf(file, model_type::Type, optimizer; kwargs...)
-    return solve_model(file, model_type, optimizer, _build_mn_pf; multinetwork=true, kwargs...)
+    return solve_model(
+        file, model_type, optimizer, _build_mn_pf; multinetwork = true, kwargs...)
 end
 
-""
+"""
+"""
 function _build_mn_pf(pm::AbstractPowerModel)
     for (n, network) in nws(pm)
-        variable_bus_voltage(pm, nw=n, bounded = false)
-        variable_gen_power(pm, nw=n, bounded = false)
-        variable_branch_power(pm, nw=n, bounded = false)
-        variable_dcline_power(pm, nw=n, bounded = false)
+        variable_bus_voltage(pm, nw = n, bounded = false)
+        variable_gen_power(pm, nw = n, bounded = false)
+        variable_branch_power(pm, nw = n, bounded = false)
+        variable_dcline_power(pm, nw = n, bounded = false)
 
-        constraint_model_voltage(pm, nw=n)
+        constraint_model_voltage(pm, nw = n)
 
-        for i in ids(pm, :ref_buses, nw=n)
-            constraint_theta_ref(pm, i, nw=n)
-            constraint_voltage_magnitude_setpoint(pm, i, nw=n)
+        for i in ids(pm, :ref_buses, nw = n)
+            constraint_theta_ref(pm, i, nw = n)
+            constraint_voltage_magnitude_setpoint(pm, i, nw = n)
         end
 
-        for (i,bus) in ref(pm, :bus, nw=n)
-            constraint_power_balance(pm, i, nw=n)
+        for (i, bus) in ref(pm, :bus, nw = n)
+            constraint_power_balance(pm, i, nw = n)
 
             # PV Bus Constraints
-            if length(ref(pm, :bus_gens, i, nw=n)) > 0 && !(i in ids(pm, :ref_buses, nw=n))
+            if length(ref(pm, :bus_gens, i, nw = n)) > 0 &&
+               !(i in ids(pm, :ref_buses, nw = n))
                 @assert bus["bus_type"] == 2
 
-                constraint_voltage_magnitude_setpoint(pm, i, nw=n)
-                for j in ref(pm, :bus_gens, i, nw=n)
-                    constraint_gen_setpoint_active(pm, j, nw=n)
+                constraint_voltage_magnitude_setpoint(pm, i, nw = n)
+                for j in ref(pm, :bus_gens, i, nw = n)
+                    constraint_gen_setpoint_active(pm, j, nw = n)
                 end
             end
         end
 
-        for i in ids(pm, :branch, nw=n)
-            constraint_ohms_yt_from(pm, i, nw=n)
-            constraint_ohms_yt_to(pm, i, nw=n)
+        for i in ids(pm, :branch, nw = n)
+            constraint_ohms_yt_from(pm, i, nw = n)
+            constraint_ohms_yt_to(pm, i, nw = n)
         end
 
-        for (i,dcline) in ref(pm, :dcline, nw=n)
-            constraint_dcline_setpoint_active(pm, i, nw=n)
+        for (i, dcline) in ref(pm, :dcline, nw = n)
+            constraint_dcline_setpoint_active(pm, i, nw = n)
 
-            f_bus = ref(pm, :bus, nw=n)[dcline["f_bus"]]
+            f_bus = ref(pm, :bus, nw = n)[dcline["f_bus"]]
             if f_bus["bus_type"] == 1
                 constraint_voltage_magnitude_setpoint(pm, n, f_bus["index"])
             end
 
-            t_bus = ref(pm, :bus, nw=n)[dcline["t_bus"]]
+            t_bus = ref(pm, :bus, nw = n)[dcline["t_bus"]]
             if t_bus["bus_type"] == 1
                 constraint_voltage_magnitude_setpoint(pm, n, t_bus["index"])
             end
@@ -397,13 +413,15 @@ function _build_mn_pf(pm::AbstractPowerModel)
     end
 end
 
-
-"opf with storage"
+"""
+opf with storage
+"""
 function _solve_opf_strg(file, model_type::Type, optimizer; kwargs...)
     return solve_model(file, model_type, optimizer, _build_opf_strg; kwargs...)
 end
 
-""
+"""
+"""
 function _build_opf_strg(pm::AbstractPowerModel)
     variable_bus_voltage(pm)
     variable_gen_power(pm)
@@ -445,13 +463,15 @@ function _build_opf_strg(pm::AbstractPowerModel)
     end
 end
 
-
-"opf with mi storage variables"
+"""
+opf with mi storage variables
+"""
 function _solve_opf_strg_mi(file, model_type::Type, optimizer; kwargs...)
     return solve_model(file, model_type, optimizer, _build_opf_strg_mi; kwargs...)
 end
 
-""
+"""
+"""
 function _build_opf_strg_mi(pm::AbstractPowerModel)
     variable_bus_voltage(pm)
     variable_gen_power(pm)
@@ -493,13 +513,15 @@ function _build_opf_strg_mi(pm::AbstractPowerModel)
     end
 end
 
-
-"opf with transformer angles as optimization variables"
+"""
+opf with transformer angles as optimization variables
+"""
 function _solve_opf_pst(file, model_type::Type, optimizer; kwargs...)
     return solve_model(file, model_type, optimizer, _build_opf_pst; kwargs...)
 end
 
-""
+"""
+"""
 function _build_opf_pst(pm::AbstractPowerModel)
     variable_bus_voltage(pm)
     variable_gen_power(pm)
@@ -535,13 +557,15 @@ function _build_opf_pst(pm::AbstractPowerModel)
     end
 end
 
-
-"opf with transformer tap magnitude and angle as optimization variables"
+"""
+opf with transformer tap magnitude and angle as optimization variables
+"""
 function _solve_opf_oltc_pst(file, model_type::Type, optimizer; kwargs...)
     return solve_model(file, model_type, optimizer, _build_opf_oltc_pst; kwargs...)
 end
 
-""
+"""
+"""
 function _build_opf_oltc_pst(pm::AbstractPowerModel)
     variable_bus_voltage(pm)
     variable_gen_power(pm)

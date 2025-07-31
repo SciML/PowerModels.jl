@@ -1,8 +1,8 @@
 
-
 function check_tnep_status(sol)
-    for (idx,val) in sol["ne_branch"]
-        @test isapprox(val["built"], 0.0, atol=1e-6, rtol=1e-6) || isapprox(val["built"], 1.0, atol=1e-6, rtol=1e-6)
+    for (idx, val) in sol["ne_branch"]
+        @test isapprox(val["built"], 0.0, atol = 1e-6, rtol = 1e-6) ||
+              isapprox(val["built"], 1.0, atol = 1e-6, rtol = 1e-6)
     end
 end
 
@@ -12,7 +12,6 @@ function check_ne_branch_keys(sol)
     ne_brnach = collect(sol["ne_branch"])[1].second
     @test all(haskey(ne_brnach, k) for k in keys(branch))
 end
-
 
 @testset "test ac tnep" begin
     @testset "3-bus case" begin
@@ -37,7 +36,6 @@ end
     end
 end
 
-
 @testset "test soc tnep" begin
     @testset "3-bus case" begin
         data = PowerModels.parse_file("../test/data/matpower/case3_tnep.m")
@@ -60,7 +58,6 @@ end
         @test isapprox(result["objective"], 1; atol = 1e-2)
     end
 end
-
 
 # requires a correct implementation of `variable_ne_branch_voltage`
 # @testset "test qc tnep" begin
@@ -86,7 +83,6 @@ end
 #     end
 # end
 
-
 @testset "test dc tnep" begin
     @testset "3-bus case" begin
         data = PowerModels.parse_file("../test/data/matpower/case3_tnep.m")
@@ -110,7 +106,6 @@ end
     end
 end
 
-
 @testset "test matpower dc tnep" begin
     @testset "5-bus case with matpower DCMP model and TNEP" begin
         result = run_tnep("../test/data/matpower/case5_tnep.m", DCMPPowerModel, minlp_solver)
@@ -120,7 +115,6 @@ end
         @test isapprox(result["solution"]["ne_branch"]["2"]["built"], 0.0; atol = 1e-5)
     end
 end
-
 
 @testset "test dc-losses tnep" begin
     #=
@@ -184,7 +178,7 @@ end
 
         branches = result["solution"]["branch"]
         ne_branches = result["solution"]["ne_branch"]
-        flow_keys = ["pf","qf","pt","qt"]
+        flow_keys = ["pf", "qf", "pt", "qt"]
 
         for fk in flow_keys
             @test !isnan(branches["1"][fk])

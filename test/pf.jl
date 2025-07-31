@@ -13,7 +13,7 @@
         @test isapprox(result["solution"]["bus"]["2"]["vm"], 0.92617; atol = 1e-3)
         @test isapprox(result["solution"]["bus"]["3"]["vm"], 0.90000; atol = 1e-3)
 
-        @test isapprox(result["solution"]["dcline"]["1"]["pf"],  0.10; atol = 1e-5)
+        @test isapprox(result["solution"]["dcline"]["1"]["pf"], 0.10; atol = 1e-5)
         @test isapprox(result["solution"]["dcline"]["1"]["pt"], -0.10; atol = 1e-5)
 
         # removed due to cross platform consistnecy, started failing 05/22/2020 when ipopt moved to jll artifacts
@@ -56,8 +56,7 @@
         @test isapprox(result["solution"]["bus"]["4"]["va"], -0; atol = 1e-3)
         @test isapprox(result["solution"]["bus"]["5"]["vm"], 1.0530; atol = 1e-3)
 
-
-        @test isapprox(result["solution"]["dcline"]["1"]["pf"],  0.15; atol = 1e-5)
+        @test isapprox(result["solution"]["dcline"]["1"]["pf"], 0.15; atol = 1e-5)
         @test isapprox(result["solution"]["dcline"]["1"]["pt"], -0.089; atol = 1e-5)
     end
     @testset "6-bus case" begin
@@ -77,7 +76,6 @@
         @test isapprox(result["objective"], 0; atol = 1e-2)
     end
 end
-
 
 @testset "test ac rect pf" begin
     @testset "5-bus asymmetric case" begin
@@ -107,13 +105,11 @@ end
         @test isapprox(result["solution"]["bus"]["4"]["va"], -0; atol = 1e-3)
         @test isapprox(result["solution"]["bus"]["5"]["vm"], 1.0530; atol = 1e-3)
 
-
         @test isapprox(result["solution"]["dcline"]["1"]["pf"],  0.10; atol = 1e-5)
         @test isapprox(result["solution"]["dcline"]["1"]["pt"], -0.089; atol = 1e-5)
     end
     =#
 end
-
 
 @testset "test ac tan pf" begin
     # removed for cross platform compat (julia v1.6, linux)
@@ -124,7 +120,8 @@ end
     #     @test isapprox(result["objective"], 0; atol = 1e-2)
     # end
     @testset "5-bus case with hvdc line" begin
-        result = run_pf("../test/data/matpower/case5_dc.m", ACTPowerModel, nlp_solver, solution_processors=[sol_data_model!])
+        result = run_pf("../test/data/matpower/case5_dc.m", ACTPowerModel,
+            nlp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -138,17 +135,15 @@ end
         @test isapprox(result["solution"]["bus"]["4"]["va"], -0; atol = 1e-3)
         @test isapprox(result["solution"]["bus"]["5"]["vm"], 1.0530; atol = 1e-3)
 
-
-        @test isapprox(result["solution"]["dcline"]["1"]["pf"],  0.15; atol = 1e-5)
+        @test isapprox(result["solution"]["dcline"]["1"]["pf"], 0.15; atol = 1e-5)
         @test isapprox(result["solution"]["dcline"]["1"]["pt"], -0.089; atol = 1e-5)
     end
 end
 
-
-
 @testset "test iv pf" begin
     @testset "3-bus case" begin
-        result = run_pf_iv("../test/data/matpower/case3.m", IVRPowerModel, nlp_solver, solution_processors=[sol_data_model!])
+        result = run_pf_iv("../test/data/matpower/case3.m", IVRPowerModel,
+            nlp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -161,13 +156,14 @@ end
         @test isapprox(result["solution"]["bus"]["2"]["vm"], 0.92617; atol = 1e-3)
         @test isapprox(result["solution"]["bus"]["3"]["vm"], 0.90000; atol = 1e-3)
 
-        @test isapprox(result["solution"]["dcline"]["1"]["pf"],  0.10; atol = 1e-5)
+        @test isapprox(result["solution"]["dcline"]["1"]["pf"], 0.10; atol = 1e-5)
         @test isapprox(result["solution"]["dcline"]["1"]["pt"], -0.10; atol = 1e-5)
         # @test isapprox(result["solution"]["dcline"]["1"]["qf"], -0.403045; atol = 1e-5) #no reason to expect this is unique
         # @test isapprox(result["solution"]["dcline"]["1"]["qt"],  0.0647562; atol = 1e-5) #no reason to expect this is unique
     end
     @testset "5-bus case with hvdc line" begin
-        result = run_pf_iv("../test/data/matpower/case5_dc.m", IVRPowerModel, nlp_solver, solution_processors=[sol_data_model!])
+        result = run_pf_iv("../test/data/matpower/case5_dc.m", IVRPowerModel,
+            nlp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -181,12 +177,10 @@ end
         @test isapprox(result["solution"]["bus"]["4"]["va"], -0; atol = 1e-3)
         @test isapprox(result["solution"]["bus"]["5"]["vm"], 1.0530; atol = 1e-3)
 
-
-        @test isapprox(result["solution"]["dcline"]["1"]["pf"],  0.15; atol = 1e-5)
+        @test isapprox(result["solution"]["dcline"]["1"]["pf"], 0.15; atol = 1e-5)
         @test isapprox(result["solution"]["dcline"]["1"]["pt"], -0.089; atol = 1e-5)
     end
 end
-
 
 @testset "test dc pf" begin
     @testset "3-bus case" begin
@@ -197,8 +191,8 @@ end
 
         @test isapprox(result["solution"]["gen"]["1"]["pg"], 1.54994; atol = 1e-3)
 
-        @test isapprox(result["solution"]["bus"]["1"]["va"],  0.00000; atol = 1e-5)
-        @test isapprox(result["solution"]["bus"]["2"]["va"],  0.09147654582; atol = 1e-5)
+        @test isapprox(result["solution"]["bus"]["1"]["va"], 0.00000; atol = 1e-5)
+        @test isapprox(result["solution"]["bus"]["2"]["va"], 0.09147654582; atol = 1e-5)
         @test isapprox(result["solution"]["bus"]["3"]["va"], -0.28291891895; atol = 1e-5)
     end
     @testset "5-bus asymmetric case" begin
@@ -231,7 +225,6 @@ end
     end
 end
 
-
 @testset "test matpower dc pf" begin
     @testset "5-bus case with matpower DCMP model" begin
         result = run_pf("../test/data/matpower/case5.m", DCMPPowerModel, nlp_solver)
@@ -244,7 +237,6 @@ end
         @test isapprox(result["solution"]["bus"]["4"]["va"], 0.0000000; atol = 1e-7)
     end
 end
-
 
 @testset "test soc pf" begin
     # started failing 05/22/2020 when ipopt moved to jll artifacts
@@ -274,7 +266,8 @@ end
     #     @test isapprox(result["objective"], 0; atol = 1e-2)
     # end
     @testset "6-bus case" begin
-        result = run_pf("../test/data/matpower/case6.m", SOCWRPowerModel, nlp_solver, solution_processors=[sol_data_model!])
+        result = run_pf("../test/data/matpower/case6.m", SOCWRPowerModel,
+            nlp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -289,11 +282,10 @@ end
     end
 end
 
-
-
 @testset "test soc distflow pf_bf" begin
     @testset "3-bus case" begin
-        result = run_pf_bf("../test/data/matpower/case3.m", SOCBFPowerModel, nlp_solver, solution_processors=[sol_data_model!])
+        result = run_pf_bf("../test/data/matpower/case3.m", SOCBFPowerModel,
+            nlp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -307,7 +299,7 @@ end
         @test isapprox(result["solution"]["bus"]["2"]["vm"], 0.92616; atol = 1e-3)
         @test isapprox(result["solution"]["bus"]["3"]["vm"], 0.89999; atol = 1e-3)
 
-        @test isapprox(result["solution"]["dcline"]["1"]["pf"],  0.10; atol = 1e-4)
+        @test isapprox(result["solution"]["dcline"]["1"]["pf"], 0.10; atol = 1e-4)
         @test isapprox(result["solution"]["dcline"]["1"]["pt"], -0.10; atol = 1e-4)
     end
     # removed due to windows instability in Julia v1.9
@@ -324,7 +316,8 @@ end
         @test isapprox(result["objective"], 0; atol = 1e-2)
     end
     @testset "6-bus case" begin
-        result = run_pf_bf("../test/data/matpower/case6.m", SOCBFPowerModel, nlp_solver, solution_processors=[sol_data_model!])
+        result = run_pf_bf("../test/data/matpower/case6.m", SOCBFPowerModel,
+            nlp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -339,10 +332,10 @@ end
     end
 end
 
-
 @testset "test linear distflow pf_bf" begin
     @testset "3-bus case" begin
-        result = run_pf_bf("../test/data/matpower/case3.m", BFAPowerModel, nlp_solver, solution_processors=[sol_data_model!])
+        result = run_pf_bf("../test/data/matpower/case3.m", BFAPowerModel,
+            nlp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -356,7 +349,7 @@ end
         @test isapprox(result["solution"]["bus"]["2"]["vm"], 0.92616; atol = 1e-3)
         @test isapprox(result["solution"]["bus"]["3"]["vm"], 0.89999; atol = 1e-3)
 
-        @test isapprox(result["solution"]["dcline"]["1"]["pf"],  0.10; atol = 1e-4)
+        @test isapprox(result["solution"]["dcline"]["1"]["pf"], 0.10; atol = 1e-4)
         @test isapprox(result["solution"]["dcline"]["1"]["pt"], -0.10; atol = 1e-4)
     end
     @testset "5-bus asymmetric case" begin
@@ -372,7 +365,8 @@ end
         @test isapprox(result["objective"], 0; atol = 1e-2)
     end
     @testset "6-bus case" begin
-        result = run_pf_bf("../test/data/matpower/case6.m", BFAPowerModel, nlp_solver, solution_processors=[sol_data_model!])
+        result = run_pf_bf("../test/data/matpower/case6.m", BFAPowerModel,
+            nlp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -391,11 +385,11 @@ end
     end
 end
 
-
 @testset "test sdp pf" begin
     # note: may have issues on linux (04/02/18)
     @testset "3-bus case" begin
-        result = run_pf("../test/data/matpower/case3.m", SDPWRMPowerModel, sdp_solver, solution_processors=[sol_data_model!])
+        result = run_pf("../test/data/matpower/case3.m", SDPWRMPowerModel,
+            sdp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -409,7 +403,7 @@ end
         @test isapprox(result["solution"]["bus"]["2"]["vm"], 0.92616; atol = 1e-3)
         @test isapprox(result["solution"]["bus"]["3"]["vm"], 0.89999; atol = 1e-3)
 
-        @test isapprox(result["solution"]["dcline"]["1"]["pf"],  0.10; atol = 1e-4)
+        @test isapprox(result["solution"]["dcline"]["1"]["pf"], 0.10; atol = 1e-4)
         @test isapprox(result["solution"]["dcline"]["1"]["pt"], -0.10; atol = 1e-4)
     end
     # note: may have issues on os x (05/07/18)
@@ -420,7 +414,8 @@ end
         @test isapprox(result["objective"], 0; atol = 1e-2)
     end
     @testset "6-bus case" begin
-        result = run_pf("../test/data/matpower/case6.m", SDPWRMPowerModel, sdp_solver, solution_processors=[sol_data_model!])
+        result = run_pf("../test/data/matpower/case6.m", SDPWRMPowerModel,
+            sdp_solver, solution_processors = [sol_data_model!])
 
         @test result["termination_status"] == OPTIMAL
         @test isapprox(result["objective"], 0; atol = 1e-2)
@@ -434,4 +429,3 @@ end
         @test isapprox(result["objective"], 0; atol = 1e-2)
     end
 end
-

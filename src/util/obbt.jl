@@ -42,50 +42,52 @@ Dict{String,Any} with 19 entries:
 ```
 
 # Keyword Arguments
-* `model_type`: relaxation to use for performing bound-tightening.
+
+  - `model_type`: relaxation to use for performing bound-tightening.
     Currently, it supports any relaxation that has explicit voltage magnitude
     and phase-angle difference variables.
-* `max_iter`: maximum number of bound-tightening iterations to perform.
-* `time_limit`: maximum amount of time (sec) for the bound-tightening algorithm.
-* `upper_bound`: can be used to specify a local feasible solution objective for
+  - `max_iter`: maximum number of bound-tightening iterations to perform.
+  - `time_limit`: maximum amount of time (sec) for the bound-tightening algorithm.
+  - `upper_bound`: can be used to specify a local feasible solution objective for
     the AC Optimal Power Flow problem.
-* `upper_bound_constraint`: boolean option that can be used to add an additional
+  - `upper_bound_constraint`: boolean option that can be used to add an additional
     constraint to reduce the search space of each of the bound-tightening
     solves. This cannot be set to `true` without specifying an upper bound.
-* `rel_gap_tol`: tolerance used to terminate the algorithm when the objective
+  - `rel_gap_tol`: tolerance used to terminate the algorithm when the objective
     value of the relaxation is close to the upper bound specified using the
     `upper_bound` keyword.
-* `min_bound_width`: domain beyond which bound-tightening is not performed.
-* `termination`: Bound-tightening algorithm terminates if the improvement in
+  - `min_bound_width`: domain beyond which bound-tightening is not performed.
+  - `termination`: Bound-tightening algorithm terminates if the improvement in
     the average or maximum bound improvement, specified using either the
     `termination = :avg` or the `termination = :max` option, is less than
     `improvement_tol`.
-* `precision`: number of decimal digits to round the tightened bounds to.
+  - `precision`: number of decimal digits to round the tightened bounds to.
 """
 function solve_obbt_opf!(file::String, optimizer; kwargs...)
     data = PowerModels.parse_file(file)
     return solve_obbt_opf!(data, optimizer; kwargs...)
 end
 
-function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
-    model_type::Type = QCLSPowerModel,
-    max_iter::Int = 100,
-    time_limit::Float64 = 3600.0,
-    upper_bound::Float64 = Inf,
-    upper_bound_constraint::Bool = false,
-    rel_gap_tol::Float64 = Inf,
-    min_bound_width::Float64 = 1e-2,
-    improvement_tol::Float64 = 1e-3,
-    precision::Int = 4,
-    termination::Symbol = :avg,
-    kwargs...)
-
+function solve_obbt_opf!(data::Dict{String, <:Any}, optimizer;
+        model_type::Type = QCLSPowerModel,
+        max_iter::Int = 100,
+        time_limit::Float64 = 3600.0,
+        upper_bound::Float64 = Inf,
+        upper_bound_constraint::Bool = false,
+        rel_gap_tol::Float64 = Inf,
+        min_bound_width::Float64 = 1e-2,
+        improvement_tol::Float64 = 1e-3,
+        precision::Int = 4,
+        termination::Symbol = :avg,
+        kwargs...)
     Memento.info(_LOGGER, "maximum OBBT iterations set to default value of $max_iter")
     Memento.info(_LOGGER, "maximum time limit for OBBT set to default value of $time_limit seconds")
 
     model_relaxation = instantiate_model(data, model_type, PowerModels.build_opf)
-    (_IM.ismultinetwork(model_relaxation, pm_it_sym)) && (Memento.error(_LOGGER, "OBBT is not supported for multi-networks"))
-    (ismulticonductor(model_relaxation)) && (Memento.error(_LOGGER, "OBBT is not supported for multi-conductor networks"))
+    (_IM.ismultinetwork(model_relaxation, pm_it_sym)) &&
+        (Memento.error(_LOGGER, "OBBT is not supported for multi-networks"))
+    (ismulticonductor(model_relaxation)) &&
+        (Memento.error(_LOGGER, "OBBT is not supported for multi-conductor networks"))
 
     # check for model_type compatability with OBBT
     _check_variables(model_relaxation)
@@ -94,19 +96,21 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
     _check_obbt_options(upper_bound, rel_gap_tol, upper_bound_constraint)
 
     # check termination norm criteria for obbt
-    (termination != :avg && termination != :max) && (Memento.error(_LOGGER, "OBBT termination criteria can only be :max or :avg"))
+    (termination != :avg && termination != :max) &&
+        (Memento.error(_LOGGER, "OBBT termination criteria can only be :max or :avg"))
 
     # pass status
     status_pass = [JuMP.LOCALLY_SOLVED, JuMP.OPTIMAL]
 
     # compute initial relative gap between relaxation objective and upper_bound
-    result_relaxation = optimize_model!(model_relaxation, optimizer=optimizer)
+    result_relaxation = optimize_model!(model_relaxation, optimizer = optimizer)
     current_relaxation_objective = result_relaxation["objective"]
     if upper_bound < current_relaxation_objective
         Memento.error(_LOGGER, "the upper bound provided to OBBT is not a valid ACOPF upper bound")
     end
     if !(result_relaxation["termination_status"] in status_pass)
-        Memento.warn(_LOGGER, "initial relaxation solve status is $(result_relaxation["termination_status"])")
+        Memento.warn(_LOGGER,
+            "initial relaxation solve status is $(result_relaxation["termination_status"])")
         if result_relaxation["termination_status"] == :SubOptimal
             Memento.warn(_LOGGER, "continuing with the bound-tightening algorithm")
         end
@@ -117,11 +121,10 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
         Memento.info(_LOGGER, "Initial relaxation gap = $current_rel_gap")
     end
 
-
     model_bt = instantiate_model(data, model_type, PowerModels.build_opf)
     (upper_bound_constraint) && (_constraint_obj_bound(model_bt, upper_bound))
 
-    stats = Dict{String,Any}()
+    stats = Dict{String, Any}()
     stats["model_type"] = model_type
     stats["initial_relaxation_objective"] = current_relaxation_objective
     stats["initial_rel_gap_from_ub"] = current_rel_gap
@@ -132,10 +135,10 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
     buses = ids(model_bt, :bus)
     buspairs = ids(model_bt, :buspairs)
 
-    vm_lb = Dict{Any,Float64}( [bus => JuMP.lower_bound(vm[bus]) for bus in buses] )
-    vm_ub = Dict{Any,Float64}( [bus => JuMP.upper_bound(vm[bus]) for bus in buses] )
-    td_lb = Dict{Any,Float64}( [bp => JuMP.lower_bound(td[bp]) for bp in buspairs] )
-    td_ub = Dict{Any,Float64}( [bp => JuMP.upper_bound(td[bp]) for bp in buspairs] )
+    vm_lb = Dict{Any, Float64}([bus => JuMP.lower_bound(vm[bus]) for bus in buses])
+    vm_ub = Dict{Any, Float64}([bus => JuMP.upper_bound(vm[bus]) for bus in buses])
+    td_lb = Dict{Any, Float64}([bp => JuMP.lower_bound(td[bp]) for bp in buspairs])
+    td_ub = Dict{Any, Float64}([bp => JuMP.upper_bound(td[bp]) for bp in buspairs])
 
     vm_range_init = sum([vm_ub[bus] - vm_lb[bus] for bus in buses])
     stats["vm_range_init"] = vm_range_init
@@ -162,8 +165,10 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
     parallel_time_elapsed = 0.0
 
     check_termination = true
-    (termination == :avg) && (check_termination = (avg_vm_reduction > improvement_tol || avg_td_reduction > improvement_tol))
-    (termination == :max) && (check_termination = (max_vm_reduction > improvement_tol || max_td_reduction > improvement_tol))
+    (termination == :avg) && (check_termination = (avg_vm_reduction > improvement_tol ||
+                          avg_td_reduction > improvement_tol))
+    (termination == :max) && (check_termination = (max_vm_reduction > improvement_tol ||
+                          max_td_reduction > improvement_tol))
 
     while check_termination
         iter_start_time = time()
@@ -176,7 +181,6 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
         max_vm_iteration_time = 0.0
         max_td_iteration_time = 0.0
 
-
         # bound-tightening for the vm variables
         for bus in buses
             (vm_ub[bus] - vm_lb[bus] < min_bound_width) && (continue)
@@ -185,9 +189,11 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
             # vm lower bound solve
             lb = NaN
             JuMP.@objective(model_bt.model, Min, vm[bus])
-            result_bt = optimize_model!(model_bt, optimizer=optimizer)
-            if (result_bt["termination_status"] == JuMP.LOCALLY_SOLVED || result_bt["termination_status"] == JuMP.OPTIMAL)
-                nlb = floor(10.0^precision * JuMP.objective_value(model_bt.model))/(10.0^precision)
+            result_bt = optimize_model!(model_bt, optimizer = optimizer)
+            if (result_bt["termination_status"] == JuMP.LOCALLY_SOLVED ||
+                result_bt["termination_status"] == JuMP.OPTIMAL)
+                nlb = floor(10.0^precision *
+                            JuMP.objective_value(model_bt.model))/(10.0^precision)
                 (nlb > vm_lb[bus]) && (lb = nlb)
             else
                 Memento.warn(_LOGGER, "BT minimization problem for vm[$bus] errored - change tolerances.")
@@ -197,9 +203,11 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
             #vm upper bound solve
             ub = NaN
             JuMP.@objective(model_bt.model, Max, vm[bus])
-            result_bt = optimize_model!(model_bt, optimizer=optimizer)
-            if (result_bt["termination_status"] == JuMP.LOCALLY_SOLVED || result_bt["termination_status"] == JuMP.OPTIMAL)
-                nub = ceil(10.0^precision * JuMP.objective_value(model_bt.model))/(10.0^precision)
+            result_bt = optimize_model!(model_bt, optimizer = optimizer)
+            if (result_bt["termination_status"] == JuMP.LOCALLY_SOLVED ||
+                result_bt["termination_status"] == JuMP.OPTIMAL)
+                nub = ceil(10.0^precision *
+                           JuMP.objective_value(model_bt.model))/(10.0^precision)
                 (nub < vm_ub[bus]) && (ub = nub)
             else
                 Memento.warn(_LOGGER, "BT maximization problem for vm[$bus] errored - change tolerances.")
@@ -209,7 +217,9 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
             max_vm_iteration_time = max(end_time, max_vm_iteration_time)
 
             # sanity checks
-            (lb > ub) && (Memento.warn(_LOGGER, "bt lb > ub - adjust tolerances in optimizer to avoid issue"); continue)
+            (lb > ub) && (
+                Memento.warn(_LOGGER, "bt lb > ub - adjust tolerances in optimizer to avoid issue");
+                continue)
             (!isnan(lb) && lb > vm_ub[bus]) && (lb = vm_lb[bus])
             (!isnan(ub) && ub < vm_lb[bus]) && (ub = vm_ub[bus])
             isnan(lb) && (lb = vm_lb[bus])
@@ -253,9 +263,11 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
             # td lower bound solve
             lb = NaN
             JuMP.@objective(model_bt.model, Min, td[bp])
-            result_bt = optimize_model!(model_bt, optimizer=optimizer)
-            if (result_bt["termination_status"] == JuMP.LOCALLY_SOLVED || result_bt["termination_status"] == JuMP.OPTIMAL)
-                nlb = floor(10.0^precision * JuMP.objective_value(model_bt.model))/(10.0^precision)
+            result_bt = optimize_model!(model_bt, optimizer = optimizer)
+            if (result_bt["termination_status"] == JuMP.LOCALLY_SOLVED ||
+                result_bt["termination_status"] == JuMP.OPTIMAL)
+                nlb = floor(10.0^precision *
+                            JuMP.objective_value(model_bt.model))/(10.0^precision)
                 (nlb > td_lb[bp]) && (lb = nlb)
             else
                 Memento.warn(_LOGGER, "BT minimization problem for td[$bp] errored - change tolerances")
@@ -265,9 +277,11 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
             # td upper bound solve
             ub = NaN
             JuMP.@objective(model_bt.model, Max, td[bp])
-            result_bt = optimize_model!(model_bt, optimizer=optimizer)
-            if (result_bt["termination_status"] == JuMP.LOCALLY_SOLVED || result_bt["termination_status"] == JuMP.OPTIMAL)
-                nub = ceil(10.0^precision * JuMP.objective_value(model_bt.model))/(10.0^precision)
+            result_bt = optimize_model!(model_bt, optimizer = optimizer)
+            if (result_bt["termination_status"] == JuMP.LOCALLY_SOLVED ||
+                result_bt["termination_status"] == JuMP.OPTIMAL)
+                nub = ceil(10.0^precision *
+                           JuMP.objective_value(model_bt.model))/(10.0^precision)
                 (nub < td_ub[bp]) && (ub = nub)
             else
                 Memento.warn(_LOGGER, "BT maximization problem for td[$bp] errored - change tolerances.")
@@ -277,7 +291,9 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
             max_td_iteration_time = max(end_time, max_td_iteration_time)
 
             # sanity checks
-            (lb > ub) && (Memento.warn(_LOGGER, "bt lb > ub - adjust tolerances in optimizer to avoid issue"); continue)
+            (lb > ub) && (
+                Memento.warn(_LOGGER, "bt lb > ub - adjust tolerances in optimizer to avoid issue");
+                continue)
             (!isnan(lb) && lb > td_ub[bp]) && (lb = td_lb[bp])
             (!isnan(ub) && ub < td_lb[bp]) && (ub = td_ub[bp])
             isnan(lb) && (lb = td_lb[bp])
@@ -308,7 +324,6 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
 
             total_td_reduction += (td_reduction)
             max_td_reduction = max(td_reduction, max_td_reduction)
-
         end
         avg_td_reduction = total_td_reduction/length(buspairs)
 
@@ -334,29 +349,35 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
             final_relaxation_objective = result_relaxation["objective"]
         else
             Memento.warn(_LOGGER, "relaxation solve failed in iteration $(current_iteration+1)")
-            Memento.warn(_LOGGER, "using the previous iteration's gap to check relative gap stopping criteria")
+            Memento.warn(_LOGGER,
+                "using the previous iteration's gap to check relative gap stopping criteria")
         end
 
-        Memento.info(_LOGGER, "iteration $(current_iteration+1), vm range: $vm_range_final, td range: $td_range_final, relaxation obj: $final_relaxation_objective")
+        Memento.info(_LOGGER,
+            "iteration $(current_iteration+1), vm range: $vm_range_final, td range: $td_range_final, relaxation obj: $final_relaxation_objective")
 
         # termination criteria update
-        (termination == :avg) && (check_termination = (avg_vm_reduction > improvement_tol || avg_td_reduction > improvement_tol))
-        (termination == :max) && (check_termination = (max_vm_reduction > improvement_tol || max_td_reduction > improvement_tol))
+        (termination == :avg) && (check_termination = (avg_vm_reduction > improvement_tol ||
+                              avg_td_reduction > improvement_tol))
+        (termination == :max) && (check_termination = (max_vm_reduction > improvement_tol ||
+                              max_td_reduction > improvement_tol))
         # interation counter update
         current_iteration += 1
         # check all the stopping criteria
-        (current_iteration >= max_iter) && (Memento.info(_LOGGER, "maximum iteration limit reached"); break)
-        (time_elapsed > time_limit) && (Memento.info(_LOGGER, "maximum time limit reached"); break)
+        (current_iteration >= max_iter) &&
+            (Memento.info(_LOGGER, "maximum iteration limit reached"); break)
+        (time_elapsed > time_limit) &&
+            (Memento.info(_LOGGER, "maximum time limit reached"); break)
         if (!isinf(rel_gap_tol)) && (current_rel_gap < rel_gap_tol)
             Memento.info(_LOGGER, "relative optimality gap < $rel_gap_tol")
             break
         end
-
     end
 
     branches_vad_same_sign_count = 0
     for (key, branch) in data["branch"]
-        is_same_sign = (branch["angmax"] >=0 && branch["angmin"] >= 0) || (branch["angmax"] <=0 && branch["angmin"] <= 0)
+        is_same_sign = (branch["angmax"] >= 0 && branch["angmin"] >= 0) ||
+                       (branch["angmax"] <= 0 && branch["angmin"] <= 0)
         (is_same_sign) && (branches_vad_same_sign_count += 1)
     end
 
@@ -375,28 +396,28 @@ function solve_obbt_opf!(data::Dict{String,<:Any}, optimizer;
     stats["vad_sign_determined"] = branches_vad_same_sign_count
 
     return data, stats
-
 end
-
 
 function _check_variables(pm::AbstractPowerModel)
     try
         vm = var(pm, :vm)
     catch err
-        (isa(error, KeyError)) && (Memento.error(_LOGGER, "OBBT is not supported for models without explicit voltage magnitude variables"))
+        (isa(error, KeyError)) && (Memento.error(_LOGGER,
+            "OBBT is not supported for models without explicit voltage magnitude variables"))
     end
 
     try
         td = var(pm, :td)
     catch err
-        (isa(error, KeyError)) && (Memento.error(_LOGGER, "OBBT is not supported for models without explicit voltage angle difference variables"))
+        (isa(error, KeyError)) && (Memento.error(_LOGGER,
+            "OBBT is not supported for models without explicit voltage angle difference variables"))
     end
 end
 
-
 function _check_obbt_options(ub::Float64, rel_gap::Float64, ub_constraint::Bool)
     if ub_constraint && isinf(ub)
-        Memento.error(_LOGGER, "the option upper_bound_constraint cannot be set to true without specifying an upper bound")
+        Memento.error(_LOGGER,
+            "the option upper_bound_constraint cannot be set to true without specifying an upper bound")
     end
 
     if !isinf(rel_gap) && isinf(ub)
@@ -404,47 +425,46 @@ function _check_obbt_options(ub::Float64, rel_gap::Float64, ub_constraint::Bool)
     end
 end
 
-
 function _constraint_obj_bound(pm::AbstractPowerModel, bound)
     model = PowerModels.check_cost_models(pm)
     if model != 2
-        Memento.error(_LOGGER, "Only cost models of type 2 is supported at this time, given cost model type $(model)")
+        Memento.error(_LOGGER,
+            "Only cost models of type 2 is supported at this time, given cost model type $(model)")
     end
 
     cost_index = PowerModels.calc_max_cost_index(pm.data)
     if cost_index > 3
-        Memento.error(_LOGGER, "Only quadratic generator cost models are supported at this time, given cost model of order $(cost_index-1)")
+        Memento.error(_LOGGER,
+            "Only quadratic generator cost models are supported at this time, given cost model of order $(cost_index-1)")
     end
 
-    PowerModels.standardize_cost_terms!(pm.data, order=2)
+    PowerModels.standardize_cost_terms!(pm.data, order = 2)
 
     from_idx = Dict(arc[1] => arc for arc in ref(pm, :arcs_from_dc))
 
     JuMP.@constraint(pm.model,
-            sum(
-                gen["cost"][1]*var(pm, :pg, i)^2 +
-                gen["cost"][2]*var(pm, :pg, i) +
-                gen["cost"][3]
-            for (i,gen) in ref(pm, :gen)) +
-            sum(
-                dcline["cost"][1]*var(pm,:p_dc, from_idx[i])^2 +
-                dcline["cost"][2]*var(pm, :p_dc, from_idx[i])  +
-                dcline["cost"][3]
-            for (i,dcline) in ref(pm, :dcline))
-            <= bound
-    )
+        sum(
+        gen["cost"][1]*var(pm, :pg, i)^2 +
+        gen["cost"][2]*var(pm, :pg, i) +
+        gen["cost"][3]
+    for (i, gen) in ref(pm, :gen)) +
+        sum(
+        dcline["cost"][1]*var(pm, :p_dc, from_idx[i])^2 +
+        dcline["cost"][2]*var(pm, :p_dc, from_idx[i]) +
+        dcline["cost"][3]
+    for (i, dcline) in ref(pm, :dcline))
+        <=
+        bound)
 end
 
-
 function _create_modifications(pm::AbstractPowerModel,
-    vm_lb::Dict{Any,Float64}, vm_ub::Dict{Any,Float64},
-    td_lb::Dict{Any,Float64}, td_ub::Dict{Any,Float64})
-
-    modifications = Dict{String,Any}()
+        vm_lb::Dict{Any, Float64}, vm_ub::Dict{Any, Float64},
+        td_lb::Dict{Any, Float64}, td_ub::Dict{Any, Float64})
+    modifications = Dict{String, Any}()
 
     modifications["per_unit"] = true
-    modifications["bus"] = Dict{String,Any}()
-    modifications["branch"] = Dict{String,Any}()
+    modifications["bus"] = Dict{String, Any}()
+    modifications["branch"] = Dict{String, Any}()
 
     for bus in ids(pm, :bus)
         index = string(ref(pm, :bus, bus, "index"))
@@ -461,4 +481,3 @@ function _create_modifications(pm::AbstractPowerModel,
 
     return modifications
 end
-

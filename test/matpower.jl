@@ -73,7 +73,6 @@
     end
 end
 
-
 @testset "test matpower data coercion" begin
     @testset "ACP Model" begin
         result = run_opf("../test/data/matpower/case14.m", ACPPowerModel, nlp_solver)
@@ -95,7 +94,6 @@ end
         @test isapprox(result["objective"], 8075.1; atol = 1e0)
     end
 end
-
 
 @testset "test matpower extentions parser" begin
     @testset "3-bus extended constants" begin
@@ -210,7 +208,6 @@ end
 end
 
 @testset "test idempotent matpower export" begin
-
     function test_mp_idempotent(filename::AbstractString, parse_file::Function)
         source_data = parse_file(filename)
 
@@ -306,19 +303,17 @@ end
     end
 end
 
-
 function test_mp_export(filename::AbstractString)
     source_data = PowerModels.parse_file(filename)
     test_mp_export(source_data)
 end
 
-function test_mp_export(data::Dict{String,<:Any})
+function test_mp_export(data::Dict{String, <:Any})
     io = PipeBuffer()
     PowerModels.export_matpower(io, data)
     destination_data = PowerModels.parse_matpower(io)
     @test true
 end
-
 
 @testset "test matpower export to file" begin
     file_case = "../test/data/matpower/case5_gap.m"
@@ -332,7 +327,6 @@ end
 
     @test InfrastructureModels.compare_dict(case_base, case_tmp)
 end
-
 
 @testset "test pti to matpower" begin
     # special string name edge case
@@ -355,12 +349,9 @@ end
         file = "../test/data/pti/case24.raw"
         test_mp_export(file)
     end
-
 end
 
-
 @testset "test matpower export robustness" begin
-
     @testset "test adhoc data" begin
         data = PowerModels.parse_file("../test/data/matpower/case5_strg.m")
 
@@ -371,7 +362,7 @@ end
             "a" => Dict("val" => 1.2, "active" => false),
             "b" => Dict("val" => 3.4),
             "c" => Dict("val" => 5.6, "active" => true),
-            "d" => Dict("val" => 1.1 + 2.3im),
+            "d" => Dict("val" => 1.1 + 2.3im)
         )
 
         data["adhoc_comp_2"] = Dict(
@@ -384,6 +375,4 @@ end
 
         test_mp_export(data)
     end
-
 end
-

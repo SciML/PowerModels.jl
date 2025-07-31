@@ -7,7 +7,6 @@ Additional information about this formulation and why it is used can be found in
 
 The objective functions that include the term `fuel_and_flow` capture cost functions on both generator and dcline components, while the names only including the term `fuel` work exclusively on generator components and ignore any cost data relating to dcline components.
 
-
 ```@autodocs
 Modules = [PowerModels]
 Pages   = ["core/objective.jl"]

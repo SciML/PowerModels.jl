@@ -2,16 +2,18 @@
 
 In addition to the standard transmission network components (e.g. bus, load, generator, branch, ...) PowerModels also includes a generic switch component, which can be used to model a variety of topology control devices (e.g. breakers, reclosers, fuses, ect...).  This section provides a brief overview of the switch component's data and mathematical model.
 
-
 ## Switch Data Model
 
-When parsing a matpower file with switch information, 
+When parsing a matpower file with switch information,
+
 ```julia
 data = PowerModels.parse_file("matpower/case5_sw.m")
 ```
+
 the switch information can be retrieved via the `"switch"` keyword in the `data` dictionary. They will be correspondingly rendered when `PowerModels.print_summary(data)` or `PowerModels.component_table(data, "switch", <columns>)` is called.
 
 The list of columns for the generic switch model is roughly as follows,
+
 ```json
 {
   "index":<int>,
@@ -25,9 +27,11 @@ The list of columns for the generic switch model is roughly as follows,
   "status":<int>,
 }
 ```
+
 By default, all of these quantities are used in per unit inside PowerModels.  The units indicated here are only used by PowerModels' mixed-unit representation and the extended Matpower network format.
 
 PowerModels' switch components can be added to Matpower data files as follows,
+
 ```matlab
 %% switch data
 % f_bus t_bus psw qsw state thermal_rating  status
@@ -37,8 +41,8 @@ mpc.switch = [
   3  4     0.0    0.00   1   1000.0  0;
 ];
 ```
-Note that this Matpower-based format includes the optional `thermal_rating` parameter.
 
+Note that this Matpower-based format includes the optional `thermal_rating` parameter.
 
 ## Switch Mathematical Model
 
@@ -64,14 +68,13 @@ Switch component have two discrete states open (i.e. 0) and closed (i.e. 1).  Wh
 \end{align}
 ```
 
-
 ### Mapping to PowerModels Functions
-- Eq. $\eqref{var_sw_state}$ - [`variable_switch_indicator`](@ref)
-- Eq. $\eqref{var_sw_voltage_fr}$ - [`variable_bus_voltage`](@ref)
-- Eq. $\eqref{var_sw_voltage_to}$ - [`variable_bus_voltage`](@ref)
-- Eq. $\eqref{var_sw_power}$ - [`variable_switch_power`](@ref)
 
-- Eq. $\eqref{eq_sw_voltage}$ - [`constraint_switch_on_off`](@ref) or [`constraint_switch_state`](@ref)
-- Eq. $\eqref{eq_sw_thermal_limit}$ - [`constraint_switch_thermal_limit`](@ref)
-- Eq. $\eqref{eq_sw_current_limit}$ - not yet implemented
+  - Eq. $\eqref{var_sw_state}$ - [`variable_switch_indicator`](@ref)
 
+  - Eq. $\eqref{var_sw_voltage_fr}$ - [`variable_bus_voltage`](@ref)
+  - Eq. $\eqref{var_sw_voltage_to}$ - [`variable_bus_voltage`](@ref)
+  - Eq. $\eqref{var_sw_power}$ - [`variable_switch_power`](@ref)
+  - Eq. $\eqref{eq_sw_voltage}$ - [`constraint_switch_on_off`](@ref) or [`constraint_switch_state`](@ref)
+  - Eq. $\eqref{eq_sw_thermal_limit}$ - [`constraint_switch_thermal_limit`](@ref)
+  - Eq. $\eqref{eq_sw_current_limit}$ - not yet implemented

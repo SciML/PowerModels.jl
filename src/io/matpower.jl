@@ -4,8 +4,10 @@
 #                                                                       #
 #########################################################################
 
-"Parses the matpwer data from either a filename or an IO object"
-function parse_matpower(io::IO; validate=true)::Dict
+"""
+Parses the matpwer data from either a filename or an IO object
+"""
+function parse_matpower(io::IO; validate = true)::Dict
     mp_data = _parse_matpower_string(read(io, String))
     pm_data = _matpower_to_powermodels!(mp_data)
     if validate
@@ -20,7 +22,6 @@ function parse_matpower(file::String; kwargs...)::Dict
     end
     return mp_data
 end
-
 
 ### Data and functions specific to Matpower format ###
 
@@ -44,7 +45,7 @@ const _mp_bus_columns = [
 ]
 
 const _mp_bus_name_columns = [
-    ("name", Union{String,SubString{String}})
+    ("name", Union{String, SubString{String}})
 ]
 
 const _mp_gen_columns = [
@@ -122,17 +123,18 @@ const _mp_switch_columns = [
     ("status", Int)
 ]
 
-
-""
+"""
+"""
 function _parse_matpower_string(data_string::String)
-    matlab_data, func_name, colnames = _IM.parse_matlab_string(data_string, extended=true)
+    matlab_data, func_name, colnames = _IM.parse_matlab_string(data_string, extended = true)
 
-    case = Dict{String,Any}()
+    case = Dict{String, Any}()
 
     if func_name != nothing
         case["name"] = func_name
     else
-        Memento.warn(_LOGGER, string("no case name found in matpower file.  The file seems to be missing \"function mpc = ...\""))
+        Memento.warn(_LOGGER,
+            string("no case name found in matpower file.  The file seems to be missing \"function mpc = ...\""))
         case["name"] = "no_name_found"
     end
 
@@ -140,17 +142,18 @@ function _parse_matpower_string(data_string::String)
     if haskey(matlab_data, "mpc.version")
         case["source_version"] = matlab_data["mpc.version"]
     else
-        Memento.warn(_LOGGER, string("no case version found in matpower file.  The file seems to be missing \"mpc.version = ...\""))
+        Memento.warn(_LOGGER,
+            string("no case version found in matpower file.  The file seems to be missing \"mpc.version = ...\""))
         case["source_version"] = "0.0.0+"
     end
 
     if haskey(matlab_data, "mpc.baseMVA")
         case["baseMVA"] = matlab_data["mpc.baseMVA"]
     else
-        Memento.warn(_LOGGER, string("no baseMVA found in matpower file.  The file seems to be missing \"mpc.baseMVA = ...\""))
+        Memento.warn(_LOGGER,
+            string("no baseMVA found in matpower file.  The file seems to be missing \"mpc.baseMVA = ...\""))
         case["baseMVA"] = 1.0
     end
-
 
     if haskey(matlab_data, "mpc.bus")
         buses = []
@@ -235,7 +238,8 @@ function _parse_matpower_string(data_string::String)
         case["bus_name"] = bus_names
 
         if length(case["bus_name"]) != length(case["bus"])
-            Memento.error(_LOGGER, "incorrect Matpower file, the number of bus names ($(length(case["bus_name"]))) is inconsistent with the number of buses ($(length(case["bus"]))).\n")
+            Memento.error(_LOGGER,
+                "incorrect Matpower file, the number of bus names ($(length(case["bus_name"]))) is inconsistent with the number of buses ($(length(case["bus"]))).\n")
         end
     end
 
@@ -249,8 +253,10 @@ function _parse_matpower_string(data_string::String)
         end
         case["gencost"] = gencost
 
-        if length(case["gencost"]) != length(case["gen"]) && length(case["gencost"]) != 2*length(case["gen"])
-            Memento.error(_LOGGER, "incorrect Matpower file, the number of generator cost functions ($(length(case["gencost"]))) is inconsistent with the number of generators ($(length(case["gen"]))).\n")
+        if length(case["gencost"]) != length(case["gen"]) &&
+           length(case["gencost"]) != 2*length(case["gen"])
+            Memento.error(_LOGGER,
+                "incorrect Matpower file, the number of generator cost functions ($(length(case["gencost"]))) is inconsistent with the number of generators ($(length(case["gen"]))).\n")
         end
     end
 
@@ -265,10 +271,10 @@ function _parse_matpower_string(data_string::String)
         case["dclinecost"] = dclinecosts
 
         if length(case["dclinecost"]) != length(case["dcline"])
-            Memento.error(_LOGGER, "incorrect Matpower file, the number of dcline cost functions ($(length(case["dclinecost"]))) is inconsistent with the number of dclines ($(length(case["dcline"]))).\n")
+            Memento.error(_LOGGER,
+                "incorrect Matpower file, the number of dcline cost functions ($(length(case["dclinecost"]))) is inconsistent with the number of dclines ($(length(case["dcline"]))).\n")
         end
     end
-
 
     for k in keys(matlab_data)
         if !in(k, _mp_data_names) && startswith(k, "mpc.")
@@ -287,7 +293,8 @@ function _parse_matpower_string(data_string::String)
                     push!(tbl, row_data)
                 end
                 case[case_name] = tbl
-                Memento.info(_LOGGER, "extending matpower format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
+                Memento.info(_LOGGER,
+                    "extending matpower format with data: $(case_name) $(length(tbl))x$(length(tbl[1])-1)")
             else
                 case[case_name] = value
                 Memento.info(_LOGGER, "extending matpower format with constant data: $(case_name)")
@@ -298,8 +305,8 @@ function _parse_matpower_string(data_string::String)
     return case
 end
 
-
-""
+"""
+"""
 function _mp_cost_data(cost_row)
     ncost = _IM.check_type(Int, cost_row[4])
     model = _IM.check_type(Int, cost_row[1])
@@ -315,7 +322,7 @@ function _mp_cost_data(cost_row)
         "startup" => _IM.check_type(Float64, cost_row[2]),
         "shutdown" => _IM.check_type(Float64, cost_row[3]),
         "ncost" => ncost,
-        "cost" => [_IM.check_type(Float64, x) for x in cost_row[5:5+nr_parameters-1]]
+        "cost" => [_IM.check_type(Float64, x) for x in cost_row[5:(5 + nr_parameters - 1)]]
     )
 
     #=
@@ -339,14 +346,12 @@ function _mp_cost_data(cost_row)
     return cost_data
 end
 
-
-
 ### Data and functions specific to PowerModels format ###
 
 """
 Converts a Matpower dict into a PowerModels dict
 """
-function _matpower_to_powermodels!(mp_data::Dict{String,<:Any})
+function _matpower_to_powermodels!(mp_data::Dict{String, <:Any})
     pm_data = mp_data
 
     # required default values
@@ -386,13 +391,12 @@ function _matpower_to_powermodels!(mp_data::Dict{String,<:Any})
 
     for optional in ["dcline", "load", "shunt", "storage", "switch"]
         if length(pm_data[optional]) == 0
-            pm_data[optional] = Dict{String,Any}()
+            pm_data[optional] = Dict{String, Any}()
         end
     end
 
     return pm_data
 end
-
 
 """
     _split_loads_shunts!(data)
@@ -401,34 +405,36 @@ Seperates Loads and Shunts in `data` under separate "load" and "shunt" keys in t
 PowerModels data format. Includes references to originating bus via "load_bus"
 and "shunt_bus" keys, respectively.
 """
-function _split_loads_shunts!(data::Dict{String,Any})
+function _split_loads_shunts!(data::Dict{String, Any})
     data["load"] = []
     data["shunt"] = []
 
     load_num = 1
     shunt_num = 1
-    for (i,bus) in enumerate(data["bus"])
+    for (i, bus) in enumerate(data["bus"])
         if bus["pd"] != 0.0 || bus["qd"] != 0.0
-            append!(data["load"], [Dict{String,Any}(
-                "pd" => bus["pd"],
-                "qd" => bus["qd"],
-                "load_bus" => bus["bus_i"],
-                "status" => convert(Int8, bus["bus_type"] != 4),
-                "index" => load_num,
-                "source_id" => ["bus", bus["bus_i"]]
-            )])
+            append!(data["load"],
+                [Dict{String, Any}(
+                    "pd" => bus["pd"],
+                    "qd" => bus["qd"],
+                    "load_bus" => bus["bus_i"],
+                    "status" => convert(Int8, bus["bus_type"] != 4),
+                    "index" => load_num,
+                    "source_id" => ["bus", bus["bus_i"]]
+                )])
             load_num += 1
         end
 
         if bus["gs"] != 0.0 || bus["bs"] != 0.0
-            append!(data["shunt"], [Dict{String,Any}(
-                "gs" => bus["gs"],
-                 "bs" => bus["bs"],
-                 "shunt_bus" => bus["bus_i"],
-                 "status" => convert(Int8, bus["bus_type"] != 4),
-                 "index" => shunt_num,
-                 "source_id" => ["bus", bus["bus_i"]]
-            )])
+            append!(data["shunt"],
+                [Dict{String, Any}(
+                    "gs" => bus["gs"],
+                    "bs" => bus["bs"],
+                    "shunt_bus" => bus["bus_i"],
+                    "status" => convert(Int8, bus["bus_type"] != 4),
+                    "index" => shunt_num,
+                    "source_id" => ["bus", bus["bus_i"]]
+                )])
             shunt_num += 1
         end
 
@@ -438,9 +444,10 @@ function _split_loads_shunts!(data::Dict{String,Any})
     end
 end
 
-
-"sets all branch transformer taps to 1.0, to simplify branch models"
-function _mp2pm_branch!(data::Dict{String,Any})
+"""
+sets all branch transformer taps to 1.0, to simplify branch models
+"""
+function _mp2pm_branch!(data::Dict{String, Any})
     branches = [branch for branch in data["branch"]]
     if haskey(data, "ne_branch")
         append!(branches, data["ne_branch"])
@@ -473,9 +480,10 @@ function _mp2pm_branch!(data::Dict{String,Any})
     end
 end
 
-
-"adds pmin and pmax values at to and from buses"
-function _mp2pm_dcline!(data::Dict{String,Any})
+"""
+adds pmin and pmax values at to and from buses
+"""
+function _mp2pm_dcline!(data::Dict{String, Any})
     for dcline in data["dcline"]
         pmin = dcline["pmin"]
         pmax = dcline["pmax"]
@@ -485,7 +493,7 @@ function _mp2pm_dcline!(data::Dict{String,Any})
         delete!(dcline, "pmin")
         delete!(dcline, "pmax")
 
-        if pmin >= 0 && pmax >=0
+        if pmin >= 0 && pmax >= 0
             pminf = pmin
             pmaxf = pmax
             pmint = loss0 - pmaxf * (1 - loss1)
@@ -525,10 +533,12 @@ function _mp2pm_dcline!(data::Dict{String,Any})
     end
 end
 
-
-"adds dcline costs, if gen costs exist"
-function _add_dcline_costs!(data::Dict{String,Any})
-    if length(data["gencost"]) > 0 && length(data["dclinecost"]) <= 0 && length(data["dcline"]) > 0
+"""
+adds dcline costs, if gen costs exist
+"""
+function _add_dcline_costs!(data::Dict{String, Any})
+    if length(data["gencost"]) > 0 && length(data["dclinecost"]) <= 0 &&
+       length(data["dcline"]) > 0
         Memento.warn(_LOGGER, "added zero cost function data for dclines")
         model = data["gencost"][1]["model"]
         if model == 1
@@ -559,19 +569,22 @@ function _add_dcline_costs!(data::Dict{String,Any})
     end
 end
 
-
-"merges generator cost functions into generator data, if costs exist"
-function _merge_cost_data!(data::Dict{String,Any})
+"""
+merges generator cost functions into generator data, if costs exist
+"""
+function _merge_cost_data!(data::Dict{String, Any})
     if haskey(data, "gencost")
         gen = data["gen"]
         gencost = data["gencost"]
 
         if length(gen) != length(gencost)
             if length(gencost) > length(gen)
-                Memento.warn(_LOGGER, "The last $(length(gencost) - length(gen)) generator cost records will be ignored due to too few generator records.")
+                Memento.warn(_LOGGER,
+                    "The last $(length(gencost) - length(gen)) generator cost records will be ignored due to too few generator records.")
                 gencost = gencost[1:length(gen)]
             else
-                Memento.warn(_LOGGER, "The number of generators ($(length(gen))) does not match the number of generator cost records ($(length(gencost))).")
+                Memento.warn(_LOGGER,
+                    "The number of generators ($(length(gen))) does not match the number of generator cost records ($(length(gencost))).")
             end
         end
 
@@ -588,13 +601,13 @@ function _merge_cost_data!(data::Dict{String,Any})
         delete!(data, "gencost")
     end
 
-
     if haskey(data, "dclinecost")
         dcline = data["dcline"]
         dclinecost = data["dclinecost"]
 
         if length(dcline) != length(dclinecost)
-            Memento.warn(_LOGGER, "The number of dclines ($(length(dcline))) does not match the number of dcline cost records ($(length(dclinecost))).")
+            Memento.warn(_LOGGER,
+                "The number of dclines ($(length(dcline))) does not match the number of dcline cost records ($(length(dclinecost))).")
         end
 
         for (i, dclc) in enumerate(dclinecost)
@@ -610,9 +623,10 @@ function _merge_cost_data!(data::Dict{String,Any})
     end
 end
 
-
-"merges bus name data into buses, if names exist"
-function _merge_bus_name_data!(data::Dict{String,Any})
+"""
+merges bus name data into buses, if names exist
+"""
+function _merge_bus_name_data!(data::Dict{String, Any})
     if haskey(data, "bus_name")
         # can assume same length is same as bus
         # this is validated during matpower parsing
@@ -628,13 +642,14 @@ function _merge_bus_name_data!(data::Dict{String,Any})
     end
 end
 
-
-"merges Matpower tables based on the table extension syntax"
-function _merge_generic_data!(data::Dict{String,Any})
+"""
+merges Matpower tables based on the table extension syntax
+"""
+function _merge_generic_data!(data::Dict{String, Any})
     mp_matrix_names = [name[5:length(name)] for name in _mp_data_names]
 
     key_to_delete = []
-    for (k,v) in data
+    for (k, v) in data
         if isa(v, Array)
             for mp_name in mp_matrix_names
                 if startswith(k, "$(mp_name)_")
@@ -642,10 +657,12 @@ function _merge_generic_data!(data::Dict{String,Any})
                     push!(key_to_delete, k)
 
                     if length(mp_matrix) != length(v)
-                        Memento.error(_LOGGER, "failed to extend the matpower matrix \"$(mp_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mp_matrix)) and $(length(v)) respectively.")
+                        Memento.error(_LOGGER,
+                            "failed to extend the matpower matrix \"$(mp_name)\" with the matrix \"$(k)\" because they do not have the same number of rows, $(length(mp_matrix)) and $(length(v)) respectively.")
                     end
 
-                    Memento.info(_LOGGER, "extending matpower format by appending matrix \"$(k)\" in to \"$(mp_name)\"")
+                    Memento.info(_LOGGER,
+                        "extending matpower format by appending matrix \"$(k)\" in to \"$(mp_name)\"")
 
                     for (i, row) in enumerate(mp_matrix)
                         merge_row = v[i]
@@ -654,7 +671,8 @@ function _merge_generic_data!(data::Dict{String,Any})
                         delete!(merge_row, "source_id")
                         for key in keys(merge_row)
                             if haskey(row, key)
-                                Memento.error(_LOGGER, "failed to extend the matpower matrix \"$(mp_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
+                                Memento.error(_LOGGER,
+                                    "failed to extend the matpower matrix \"$(mp_name)\" with the matrix \"$(k)\" because they both share \"$(key)\" as a column name.")
                             end
                             row[key] = merge_row[key]
                         end
@@ -663,7 +681,6 @@ function _merge_generic_data!(data::Dict{String,Any})
                     break # out of mp_matrix_names loop
                 end
             end
-
         end
     end
 
@@ -672,22 +689,25 @@ function _merge_generic_data!(data::Dict{String,Any})
     end
 end
 
-
-"Export power network data in the matpower format"
-function export_matpower(data::Dict{String,Any})
+"""
+Export power network data in the matpower format
+"""
+function export_matpower(data::Dict{String, Any})
     return sprint(export_matpower, data)
 end
 
-" Get a default value for dict entry "
-function _get_default(dict, key, default=0.0)
+"""
+Get a default value for dict entry
+"""
+function _get_default(dict, key, default = 0.0)
     if haskey(dict, key) && dict[key] != NaN
         return dict[key]
     end
     return default
 end
 
-
-""
+"""
+"""
 function _check_keys(data, keys)
     for key in keys
         if haskey(data, key)
@@ -696,17 +716,19 @@ function _check_keys(data, keys)
     end
 end
 
-
-"Export power network data to a file in the matpower format"
-function export_matpower(file::AbstractString, data::Dict{String,Any})
+"""
+Export power network data to a file in the matpower format
+"""
+function export_matpower(file::AbstractString, data::Dict{String, Any})
     open(file, "w") do io
         export_matpower(io, data)
     end
 end
 
-
-"Export power network data in the matpower format"
-function export_matpower(io::IO, data::Dict{String,Any})
+"""
+Export power network data in the matpower format
+"""
+function export_matpower(io::IO, data::Dict{String, Any})
     if _IM.ismultinetwork(data)
         Memento.error(_LOGGER, "export_matpower does not yet support multinetwork data")
     end
@@ -715,7 +737,7 @@ function export_matpower(io::IO, data::Dict{String,Any})
 
     #convert data to mixed unit
     if data["per_unit"]
-       make_mixed_units!(data)
+        make_mixed_units!(data)
     end
 
     # make all costs have the name number of items (to prepare for table export)
@@ -723,32 +745,32 @@ function export_matpower(io::IO, data::Dict{String,Any})
 
     # create some useful maps and data structures
     buses = Dict{Int, Dict}()
-    for (idx,bus) in data["bus"]
+    for (idx, bus) in data["bus"]
         buses[bus["index"]] = bus
     end
     generators = Dict{Int, Dict}()
-    for (idx,gen) in data["gen"]
+    for (idx, gen) in data["gen"]
         generators[gen["index"]] = gen
     end
     storage = Dict{Int, Dict}()
-    for (idx,strg) in data["storage"]
+    for (idx, strg) in data["storage"]
         storage[strg["index"]] = strg
     end
     branches = Dict{Int, Dict}()
-    for (idx,branch) in data["branch"]
-       branches[branch["index"]] = branch
+    for (idx, branch) in data["branch"]
+        branches[branch["index"]] = branch
     end
     dclines = Dict{Int, Dict}()
-    for (idx,dcline) in data["dcline"]
-       dclines[dcline["index"]] = dcline
+    for (idx, dcline) in data["dcline"]
+        dclines[dcline["index"]] = dcline
     end
     switches = Dict{Int, Dict}()
-    for (idx,switch) in data["switch"]
-       switches[switch["index"]] = switch
+    for (idx, switch) in data["switch"]
+        switches[switch["index"]] = switch
     end
     ne_branches = Dict{Int, Dict}()
     if haskey(data, "ne_branch")
-        for (idx,branch) in data["ne_branch"]
+        for (idx, branch) in data["ne_branch"]
             ne_branches[branch["index"]] = branch
         end
     end
@@ -759,18 +781,18 @@ function export_matpower(io::IO, data::Dict{String,Any})
     bs = Dict{Int, Float64}()
 
     # collect all the loads
-    for (idx,bus) in data["bus"]
+    for (idx, bus) in data["bus"]
         pd[bus["index"]] = 0
         qd[bus["index"]] = 0
     end
-    for (idx,load) in data["load"]
+    for (idx, load) in data["load"]
         bus = buses[load["load_bus"]]
         pd[bus["index"]] += load["pd"]
         qd[bus["index"]] += load["qd"]
     end
 
     # collect all the shunts
-    for (idx,bus) in data["bus"]
+    for (idx, bus) in data["bus"]
         gs[bus["index"]] = 0
         bs[bus["index"]] = 0
     end
@@ -793,9 +815,10 @@ function export_matpower(io::IO, data::Dict{String,Any})
 
     # Print the bus data
     println(io, "%% bus data")
-    println(io, "%    bus_i    type    Pd    Qd    Gs    Bs    area    Vm    Va    baseKV    zone    Vmax    Vmin")
+    println(io,
+        "%    bus_i    type    Pd    Qd    Gs    Bs    area    Vm    Va    baseKV    zone    Vmax    Vmin")
     println(io, "mpc.bus = [")
-    for (idx,bus) in sort(collect(buses), by=(x) -> x.first)
+    for (idx, bus) in sort(collect(buses), by = (x) -> x.first)
         println(io,
             "\t", bus["index"],
             "\t", bus["bus_type"],
@@ -813,7 +836,7 @@ function export_matpower(io::IO, data::Dict{String,Any})
             "\t", _get_default(bus, "lam_p", ""),
             "\t", _get_default(bus, "lam_q", ""),
             "\t", _get_default(bus, "mu_vmax", ""),
-            "\t", _get_default(bus, "mu_vmin",""),
+            "\t", _get_default(bus, "mu_vmin", "")
         )
     end
     println(io, "];")
@@ -823,7 +846,7 @@ function export_matpower(io::IO, data::Dict{String,Any})
     if haskey(collect(values(buses))[1], "bus_name")
         println(io, "%% bus names")
         println(io, "mpc.bus_name = {")
-        for (idx,bus) in sort(buses)
+        for (idx, bus) in sort(buses)
             println(io, "\t'", bus["bus_name"], "'")
         end
         println(io, "};")
@@ -832,14 +855,16 @@ function export_matpower(io::IO, data::Dict{String,Any})
 
     # Print the generator data
     println(io, "%% generator data")
-    println(io, "%    bus    Pg    Qg    Qmax    Qmin    Vg    mBase    status    Pmax    Pmin    Pc1    Pc2    Qc1min    Qc1max    Qc2min    Qc2max    ramp_agc    ramp_10    ramp_30    ramp_q    apf")
+    println(io,
+        "%    bus    Pg    Qg    Qmax    Qmin    Vg    mBase    status    Pmax    Pmin    Pc1    Pc2    Qc1min    Qc1max    Qc2min    Qc2max    ramp_agc    ramp_10    ramp_30    ramp_q    apf")
     println(io, "mpc.gen = [")
     i = 1
-    for (idx,gen) in sort(collect(generators), by=(x) -> x.first)
+    for (idx, gen) in sort(collect(generators), by = (x) -> x.first)
         if idx != gen["index"]
-            Memento.warn(_LOGGER, "The index of the generator does not match the matpower assigned index. Any data that uses generator indexes for reference is corrupted.");
+            Memento.warn(_LOGGER,
+                "The index of the generator does not match the matpower assigned index. Any data that uses generator indexes for reference is corrupted.");
         end
-        println(io, 
+        println(io,
             "\t", gen["gen_bus"],
             "\t", _get_default(gen, "pg"),
             "\t", _get_default(gen, "qg"),
@@ -857,30 +882,32 @@ function export_matpower(io::IO, data::Dict{String,Any})
             "\t", _get_default(gen, "qc2min", ""),
             "\t", _get_default(gen, "qc2max", ""),
             "\t", _get_default(gen, "ramp_agc", ""),
-            "\t", (haskey(gen, "ramp_10") ? gen["ramp_10"] : haskey(gen, "ramp_30") ? 0 : ""),
+            "\t", (haskey(gen, "ramp_10") ? gen["ramp_10"] :
+                   haskey(gen, "ramp_30") ? 0 : ""),
             "\t", _get_default(gen, "ramp_30", ""),
             "\t", _get_default(gen, "ramp_q", ""),
             "\t", _get_default(gen, "apf", ""),
             "\t", _get_default(gen, "mu_pmax", ""),
             "\t", _get_default(gen, "mu_pmin", ""),
             "\t", _get_default(gen, "mu_qmax", ""),
-            "\t", _get_default(gen, "mu_qmin", ""),
+            "\t", _get_default(gen, "mu_qmin", "")
         )
         i = i+1
     end
-    println(io,"];")
+    println(io, "];")
     println(io)
-
 
     if length(storage) > 0
         # Print the storage data
         println(io, "%% storage data")
-        println(io, "%    storage_bus    ps    qs    energy    energy_rating    charge_rating    discharge_rating    charge_efficiency    discharge_efficiency    thermal_rating    qmin    qmax    r    x    p_loss    q_loss    status")
+        println(io,
+            "%    storage_bus    ps    qs    energy    energy_rating    charge_rating    discharge_rating    charge_efficiency    discharge_efficiency    thermal_rating    qmin    qmax    r    x    p_loss    q_loss    status")
         println(io, "mpc.storage = [")
         i = 1
-        for (idx,strg) in sort(collect(storage), by=(x) -> x.first)
+        for (idx, strg) in sort(collect(storage), by = (x) -> x.first)
             if idx != strg["index"]
-                Memento.warn(_LOGGER, "The index of the storage does not match the matpower assigned index. Any data that uses storage indexes for reference is corrupted.");
+                Memento.warn(_LOGGER,
+                    "The index of the storage does not match the matpower assigned index. Any data that uses storage indexes for reference is corrupted.");
             end
             println(io, "\t", strg["storage_bus"],
                 "\t", _get_default(strg, "ps"),
@@ -898,35 +925,36 @@ function export_matpower(io::IO, data::Dict{String,Any})
                 "\t", _get_default(strg, "x"),
                 "\t", _get_default(strg, "p_loss"),
                 "\t", _get_default(strg, "q_loss"),
-                "\t", _get_default(strg, "status"),
+                "\t", _get_default(strg, "status")
             )
             i = i+1
         end
-        println(io,"];")
+        println(io, "];")
         println(io)
     end
 
-
     # Print the branch data
     println(io, "%% branch data")
-    println(io, "%    f_bus    t_bus    r    x    b    rateA    rateB    rateC    ratio    angle    status    angmin    angmax")
+    println(io,
+        "%    f_bus    t_bus    r    x    b    rateA    rateB    rateC    ratio    angle    status    angmin    angmax")
     println(io, "mpc.branch = [")
     i = 1
-    for (idx,branch) in sort(collect(branches), by=(x) -> x.first)
+    for (idx, branch) in sort(collect(branches), by = (x) -> x.first)
         if idx != branch["index"]
-            Memento.warn(_LOGGER, "The index of the branch does not match the matpower assigned index. Any data that uses branch indexes for reference is corrupted.");
+            Memento.warn(_LOGGER,
+                "The index of the branch does not match the matpower assigned index. Any data that uses branch indexes for reference is corrupted.");
         end
         println(io,
             "\t", _get_default(branch, "f_bus"),
             "\t", _get_default(branch, "t_bus"),
             "\t", _get_default(branch, "br_r"),
             "\t", _get_default(branch, "br_x"),
-            "\t", (branch["b_to"] + branch["b_fr"]) != NaN ? (branch["b_to"] + branch["b_fr"]) : 0,
+            "\t", (branch["b_to"] + branch["b_fr"]) != NaN ?
+                  (branch["b_to"] + branch["b_fr"]) : 0,
             "\t", _get_default(branch, "rate_a"),
             "\t", _get_default(branch, "rate_b"),
-            "\t", _get_default(branch, "rate_c"),
-
-            "\t", (branch["transformer"] ? branch["tap"] : 0),
+            "\t", _get_default(branch, "rate_c"), "\t",
+            (branch["transformer"] ? branch["tap"] : 0),
             "\t", (branch["transformer"] ? branch["shift"] : 0),
             "\t", _get_default(branch, "br_status"),
             "\t", _get_default(branch, "angmin"),
@@ -938,19 +966,20 @@ function export_matpower(io::IO, data::Dict{String,Any})
             "\t", _get_default(branch, "mu_sf", ""),
             "\t", _get_default(branch, "mu_st", ""),
             "\t", _get_default(branch, "mu_angmin", ""),
-            "\t", _get_default(branch, "mu_angmax", ""),
+            "\t", _get_default(branch, "mu_angmax", "")
         )
         i = i+1
     end
     println(io, "];")
     println(io)
 
-    if length(dclines) > 0 
+    if length(dclines) > 0
         # print the dcline data
         println(io, "%% dcline data")
-        println(io, "%    f_bus    t_bus    status    Pf    Pt    Qf    Qt    Vf    Vt    Pmin    Pmax    QminF    QmaxF    QminT    QmaxT    loss0    loss1")
+        println(io,
+            "%    f_bus    t_bus    status    Pf    Pt    Qf    Qt    Vf    Vt    Pmin    Pmax    QminF    QmaxF    QminT    QmaxT    loss0    loss1")
         println(io, "mpc.dcline = [")
-        for (idx, dcline) in sort(collect(dclines), by=(x) -> x.first)
+        for (idx, dcline) in sort(collect(dclines), by = (x) -> x.first)
             println(io,
                 "\t", _get_default(dcline, "f_bus"),
                 "\t", _get_default(dcline, "t_bus"),
@@ -961,8 +990,10 @@ function export_matpower(io::IO, data::Dict{String,Any})
                 "\t", -_get_default(dcline, "qt"),  # opposite convention
                 "\t", _get_default(dcline, "vf"),
                 "\t", _get_default(dcline, "vt"),
-                "\t", (haskey(dcline, "mp_pmin") ? dcline["mp_pmin"] : min(dcline["pmaxt"], dcline["pmint"], dcline["pmaxf"], dcline["pminf"])),
-                "\t", (haskey(dcline, "mp_pmax") ? dcline["mp_pmax"] : max(dcline["pmaxt"], dcline["pmint"], dcline["pmaxf"], dcline["pminf"])),
+                "\t", (haskey(dcline, "mp_pmin") ? dcline["mp_pmin"] :
+                       min(dcline["pmaxt"], dcline["pmint"], dcline["pmaxf"], dcline["pminf"])),
+                "\t", (haskey(dcline, "mp_pmax") ? dcline["mp_pmax"] :
+                       max(dcline["pmaxt"], dcline["pmint"], dcline["pmaxf"], dcline["pminf"])),
                 "\t", _get_default(dcline, "qminf"),
                 "\t", _get_default(dcline, "qmaxf"),
                 "\t", _get_default(dcline, "qmint"),
@@ -974,20 +1005,19 @@ function export_matpower(io::IO, data::Dict{String,Any})
                 "\t", _get_default(dcline, "mu_qminf", ""),
                 "\t", _get_default(dcline, "mu_qmaxf", ""),
                 "\t", _get_default(dcline, "mu_qmint", ""),
-                "\t", _get_default(dcline, "mu_qmaxt", ""),
+                "\t", _get_default(dcline, "mu_qmaxt", "")
             )
         end
         println(io, "];")
         println(io)
     end
 
-
     if length(switches) > 0
         # print the switch data
         println(io, "%% switch data")
         println(io, "%  f_bus    t_bus    psw    qsw    state    thermal_rating    status")
         println(io, "mpc.switch = [")
-        for (idx, switch) in sort(collect(switches), by=(x) -> x.first)
+        for (idx, switch) in sort(collect(switches), by = (x) -> x.first)
             println(io,
                 "\t", _get_default(switch, "f_bus"),
                 "\t", _get_default(switch, "t_bus"),
@@ -1002,7 +1032,6 @@ function export_matpower(io::IO, data::Dict{String,Any})
         println(io)
     end
 
-
     # Print the gen cost data
     _export_cost_data(io, generators, "mpc.gencost")
 
@@ -1012,19 +1041,21 @@ function export_matpower(io::IO, data::Dict{String,Any})
     # ne branch is not part of the matpower specs. However, it is treated as a special case by the matpower parser
     # for example, br_b is converted into b_to and b_fr
     if haskey(data, "ne_branch")
-        println(io, "%column_names%    f_bus    t_bus    br_r    br_x    br_b    rate_a    rate_b    rate_c    tap    shift    br_status    angmin    angmax    construction_cost")
+        println(io,
+            "%column_names%    f_bus    t_bus    br_r    br_x    br_b    rate_a    rate_b    rate_c    tap    shift    br_status    angmin    angmax    construction_cost")
         println(io, "mpc.ne_branch = [")
         i = 1
-        for (idx,branch) in sort(collect(ne_branches), by=(x) -> x.first)
+        for (idx, branch) in sort(collect(ne_branches), by = (x) -> x.first)
             if idx != branch["index"]
-                Memento.warn(_LOGGER, "The index of the ne_branch does not match the matpower assigned index. Any data that uses branch indexes for reference is corrupted.");
+                Memento.warn(_LOGGER,
+                    "The index of the ne_branch does not match the matpower assigned index. Any data that uses branch indexes for reference is corrupted.");
             end
             println(io,
                 "\t", branch["f_bus"],
                 "\t", branch["t_bus"],
                 "\t", _get_default(branch, "br_r"),
                 "\t", _get_default(branch, "br_x"),
-                "\t", (haskey(branch,"b_to") ? branch["b_to"] + branch["b_fr"]  : 0),
+                "\t", (haskey(branch, "b_to") ? branch["b_to"] + branch["b_fr"] : 0),
                 "\t", _get_default(branch, "rate_a"),
                 "\t", _get_default(branch, "rate_b"),
                 "\t", _get_default(branch, "rate_c"),
@@ -1033,7 +1064,7 @@ function export_matpower(io::IO, data::Dict{String,Any})
                 "\t", _get_default(branch, "br_status"),
                 "\t", _get_default(branch, "angmin"),
                 "\t", _get_default(branch, "angmax"),
-                "\t", _get_default(branch, "construction_cost"),
+                "\t", _get_default(branch, "construction_cost")
             )
             i = i+1
         end
@@ -1041,11 +1072,11 @@ function export_matpower(io::IO, data::Dict{String,Any})
         println(io)
     end
 
-    if all(haskey(bus, "name") for (i,bus) in buses)
+    if all(haskey(bus, "name") for (i, bus) in buses)
         # Print the bus name data
         println(io, "%% bus names")
         println(io, "mpc.bus_name = {")
-        for (idx,bus) in sort(collect(buses), by=(x) -> x.first)
+        for (idx, bus) in sort(collect(buses), by = (x) -> x.first)
             println(io,
                 "\t", "'", bus["name"], "'"
             )
@@ -1055,45 +1086,101 @@ function export_matpower(io::IO, data::Dict{String,Any})
     end
 
     # Print the extra bus data
-    _export_extra_data(io, data, "bus", Set(["index", "source_id", "gs", "bs", "zone", "bus_i", "bus_type", "qd",  "vmax", "area", "vmin", "va", "vm", "base_kv", "pd", "name", "lam_p", "lam_q", "mu_vmax", "mu_vmin"]); postfix="_data")
+    _export_extra_data(io,
+        data,
+        "bus",
+        Set(["index", "source_id", "gs", "bs", "zone", "bus_i", "bus_type",
+            "qd", "vmax", "area", "vmin", "va", "vm", "base_kv",
+            "pd", "name", "lam_p", "lam_q", "mu_vmax", "mu_vmin"]);
+        postfix = "_data")
 
     # Print the extra generator data
-    _export_extra_data(io, data, "gen", Set(["index", "source_id", "gen_bus", "pg", "qg", "qmax", "qmin", "vg", "mbase", "gen_status", "pmax", "pmin", "pc1", "pc2", "qc1min", "qc1max", "qc2min", "qc2max", "ramp_agc", "ramp_10", "ramp_30", "ramp_q", "apf", "ncost", "model", "shutdown", "startup", "cost", "mu_pmax", "mu_pmin", "mu_qmax", "mu_qmin"]); postfix="_data")
+    _export_extra_data(io,
+        data,
+        "gen",
+        Set(["index", "source_id", "gen_bus", "pg", "qg", "qmax", "qmin", "vg", "mbase",
+            "gen_status", "pmax", "pmin", "pc1", "pc2", "qc1min", "qc1max", "qc2min",
+            "qc2max", "ramp_agc", "ramp_10", "ramp_30", "ramp_q", "apf", "ncost", "model",
+            "shutdown", "startup", "cost", "mu_pmax", "mu_pmin", "mu_qmax", "mu_qmin"]);
+        postfix = "_data")
 
     # Print the extra storage data
-    _export_extra_data(io, data, "storage", Set(["index", "source_id", "storage_bus", "ps", "qs", "energy", "energy_rating", "charge_rating", "discharge_rating", "charge_efficiency", "discharge_efficiency", "thermal_rating", "qmin", "qmax", "r", "x", "p_loss", "q_loss", "status"]); postfix="_data")
+    _export_extra_data(io,
+        data,
+        "storage",
+        Set(["index", "source_id", "storage_bus", "ps", "qs", "energy",
+            "energy_rating", "charge_rating", "discharge_rating",
+            "charge_efficiency", "discharge_efficiency", "thermal_rating",
+            "qmin", "qmax", "r", "x", "p_loss", "q_loss", "status"]);
+        postfix = "_data")
 
     # Print the extra branch data
-    _export_extra_data(io, data, "branch", Set(["index", "source_id", "f_bus", "t_bus", "br_r", "br_x", "br_b", "b_to", "b_fr", "rate_a", "rate_b", "rate_c", "tap", "shift", "br_status", "angmin", "angmax", "transformer", "g_to", "g_fr", "pf", "qf", "pt", "qt", "mu_sf", "mu_st", "mu_angmin", "mu_angmax"]); postfix="_data")
+    _export_extra_data(io,
+        data,
+        "branch",
+        Set(["index", "source_id", "f_bus", "t_bus", "br_r", "br_x", "br_b",
+            "b_to", "b_fr", "rate_a", "rate_b", "rate_c", "tap", "shift",
+            "br_status", "angmin", "angmax", "transformer", "g_to", "g_fr",
+            "pf", "qf", "pt", "qt", "mu_sf", "mu_st", "mu_angmin", "mu_angmax"]);
+        postfix = "_data")
 
     # Print the extra dcline data
-    _export_extra_data(io, data, "dcline", Set(["index", "source_id", "mu_qmaxt", "mu_qmint", "mu_qmaxf", "mu_qminf", "mu_pmax", "mu_pmin", "loss0", "loss1", "qmint", "qmaxt", "pmin", "pmax", "qminf", "qmaxf", "f_bus", "t_bus", "br_status", "pf", "pt", "qf", "qt", "vf", "vt", "ncost", "model", "shutdown", "pmaxt", "startup", "pmint", "cost", "pminf", "pmaxf", "mp_pmax", "mp_pmin"]); postfix="_data")
+    _export_extra_data(io,
+        data,
+        "dcline",
+        Set(["index", "source_id", "mu_qmaxt", "mu_qmint", "mu_qmaxf", "mu_qminf",
+            "mu_pmax", "mu_pmin", "loss0", "loss1", "qmint", "qmaxt", "pmin",
+            "pmax", "qminf", "qmaxf", "f_bus", "t_bus", "br_status", "pf",
+            "pt", "qf", "qt", "vf", "vt", "ncost", "model", "shutdown", "pmaxt",
+            "startup", "pmint", "cost", "pminf", "pmaxf", "mp_pmax", "mp_pmin"]);
+        postfix = "_data")
 
     # Print the extra switch data
-    _export_extra_data(io, data, "switch", Set(["index", "source_id", "f_bus", "t_bus", "psw", "qsw", "state", "thermal_rating", "status"]); postfix="_data")
-
+    _export_extra_data(io,
+        data,
+        "switch",
+        Set(["index", "source_id", "f_bus", "t_bus", "psw",
+            "qsw", "state", "thermal_rating", "status"]);
+        postfix = "_data")
 
     # Print the extra ne_branch data
     if haskey(data, "ne_branch")
-        _export_extra_data(io, data, "ne_branch", Set(["index", "source_id", "f_bus", "t_bus", "br_r", "br_x", "br_b", "b_to", "b_fr", "rate_a", "rate_b", "rate_c", "tap", "shift", "br_status", "angmin", "angmax", "transformer", "construction_cost", "g_to", "g_fr"]); postfix="_data")
+        _export_extra_data(io,
+            data,
+            "ne_branch",
+            Set(["index", "source_id", "f_bus", "t_bus", "br_r", "br_x", "br_b", "b_to",
+                "b_fr", "rate_a", "rate_b", "rate_c", "tap", "shift", "br_status",
+                "angmin", "angmax", "transformer", "construction_cost", "g_to", "g_fr"]);
+            postfix = "_data")
     end
 
     # print the extra load data
-    _export_extra_data(io, data, "load", Set(["index", "source_id", "load_bus", "status", "qd", "pd"]); postfix="_data")
+    _export_extra_data(
+        io, data, "load", Set(["index", "source_id", "load_bus", "status", "qd", "pd"]);
+        postfix = "_data")
 
     # print the extra shunt data
-    _export_extra_data(io, data, "shunt", Set(["index", "source_id", "shunt_bus", "status", "gs", "bs"]); postfix="_data")
+    _export_extra_data(
+        io, data, "shunt", Set(["index", "source_id", "shunt_bus", "status", "gs", "bs"]);
+        postfix = "_data")
 
     # print the extra component data
     for (key, value) in data
-        if key != "bus" && key != "gen" && key != "branch" && key != "load" && key != "shunt" && key != "storage" && key != "dcline" && key != "switch" && key != "ne_branch" && key != "version" && key != "baseMVA" && key != "per_unit" && key != "name" && key != "source_type" && key != "source_version"
+        if key != "bus" && key != "gen" && key != "branch" && key != "load" &&
+           key != "shunt" && key != "storage" && key != "dcline" && key != "switch" &&
+           key != "ne_branch" && key != "version" && key != "baseMVA" &&
+           key != "per_unit" && key != "name" && key != "source_type" &&
+           key != "source_version"
             _export_extra_data(io, data, key)
         end
     end
 end
 
-"Export fields of a component type"
-function _export_extra_data(io::IO, data::Dict{String,<:Any}, component, excluded_fields=Set(["index", "source_id"]); postfix="")
+"""
+Export fields of a component type
+"""
+function _export_extra_data(io::IO, data::Dict{String, <:Any}, component,
+        excluded_fields = Set(["index", "source_id"]); postfix = "")
     # check if numeric
     if typeof(data[component]) <: Real
         println(io, "mpc.", component, " = ", data[component], ";")
@@ -1109,8 +1196,9 @@ function _export_extra_data(io::IO, data::Dict{String,<:Any}, component, exclude
     end
 
     # proceed only if given a Dict
-    if !(typeof(data[component]) <: Dict{<:AbstractString,<:Any}
-            || typeof(data[component]) <: Dict{<:Real,<:Any})
+    if !(typeof(data[component]) <: Dict{<:AbstractString, <:Any}
+         ||
+         typeof(data[component]) <: Dict{<:Real, <:Any})
         return
     end
 
@@ -1142,9 +1230,8 @@ function _export_extra_data(io::IO, data::Dict{String,<:Any}, component, exclude
         return
     end
 
-
-    if all(haskey(comp, "index") for (key,comp) in comp_dict)
-        key_order = sort(collect(keys(comp_dict)), by=x->comp_dict[x]["index"])
+    if all(haskey(comp, "index") for (key, comp) in comp_dict)
+        key_order = sort(collect(keys(comp_dict)), by = x->comp_dict[x]["index"])
     else
         key_order = sort(collect(keys(comp_dict)))
     end
@@ -1163,11 +1250,12 @@ function _export_extra_data(io::IO, data::Dict{String,<:Any}, component, exclude
     for idx in key_order
         c = comp_dict[idx]
         if haskey(c, "index") && i != c["index"]
-            Memento.warn(_LOGGER, "The index of a component does not match the implicit matpower index. Any data that uses component indexes for reference is corrupted.")
+            Memento.warn(_LOGGER,
+                "The index of a component does not match the implicit matpower index. Any data that uses component indexes for reference is corrupted.")
         end
 
         for field in included_fields
-            print(io,"\t")
+            print(io, "\t")
             if haskey(c, field)
                 value = c[field]
                 if typeof(value) <: AbstractString
@@ -1182,7 +1270,8 @@ function _export_extra_data(io::IO, data::Dict{String,<:Any}, component, exclude
                 elseif typeof(value) <: Real
                     print(io, "$(value)")
                 else
-                    Memento.warn(_LOGGER, "unable to export $(typeof(value)) value for '$(field)' in component list $(component), not a string or numeric value")
+                    Memento.warn(_LOGGER,
+                        "unable to export $(typeof(value)) value for '$(field)' in component list $(component), not a string or numeric value")
                     print(io, "NaN")
                 end
             else
@@ -1196,8 +1285,10 @@ function _export_extra_data(io::IO, data::Dict{String,<:Any}, component, exclude
     println(io)
 end
 
-"Export cost data"
-function _export_cost_data(io::IO, components::Dict{Int,Dict}, prefix::String)
+"""
+Export cost data
+"""
+function _export_cost_data(io::IO, components::Dict{Int, Dict}, prefix::String)
     if length(components) <= 0
         return
     end
@@ -1207,7 +1298,7 @@ function _export_cost_data(io::IO, components::Dict{Int,Dict}, prefix::String)
         ncost = length(a_comp["cost"])
         model = a_comp["model"]
 
-        for (i,comp) in components
+        for (i, comp) in components
             if length(comp["cost"]) != ncost || comp["model"] != model
                 Memento.warn(_LOGGER, "heterogeneous cost functions will be ommited in Matpower data")
                 return
@@ -1220,15 +1311,17 @@ function _export_cost_data(io::IO, components::Dict{Int,Dict}, prefix::String)
         println(io, "%    2    startup    shutdown    n    c(n-1)    ...    c0")
         println(io, prefix, " = [")
 
-        for (idx,comp) in sort(collect(components), by=(x) -> x.first)
+        for (idx, comp) in sort(collect(components), by = (x) -> x.first)
             if comp["model"] == 1
-                print(io, "\t1\t", comp["startup"], "\t", comp["shutdown"], "\t", (div(length(comp["cost"]),2))),
-                for l=1:length(comp["cost"])
+                print(io, "\t1\t", comp["startup"], "\t", comp["shutdown"],
+                    "\t", (div(length(comp["cost"]), 2))),
+                for l in 1:length(comp["cost"])
                     print(io, "\t", comp["cost"][l])
                 end
             else
-                print(io, "\t2\t", comp["startup"], "\t", comp["shutdown"], "\t", length(comp["cost"])),
-                for l=1:length(comp["cost"])
+                print(io, "\t2\t", comp["startup"], "\t",
+                    comp["shutdown"], "\t", length(comp["cost"])),
+                for l in 1:length(comp["cost"])
                     print(io, "\t", comp["cost"][l])
                 end
             end

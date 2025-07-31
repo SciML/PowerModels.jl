@@ -55,7 +55,8 @@ end
         result = run_opf(data, SOCWRConicPowerModel, sdp_solver)
 
         # ALMOST_OPTIMAL only required for Julia 1.0 on Linux
-        @test result["termination_status"] == OPTIMAL || result["termination_status"] == ALMOST_OPTIMAL
+        @test result["termination_status"] == OPTIMAL ||
+              result["termination_status"] == ALMOST_OPTIMAL
         # 5e0 only required for Julia 1.6 on Linux
         @test isapprox(result["objective"], 3096.04; atol = 5e0)
     end
@@ -88,7 +89,6 @@ end
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 18911.70; atol = 1e0)
     end
-
 end
 
 @testset "pwl objective" begin
@@ -107,9 +107,7 @@ end
         @test result["termination_status"] == LOCALLY_SOLVED
         @test isapprox(result["objective"], 42565; atol = 1e0)
     end
-
 end
-
 
 @testset "dcline objectives" begin
     data = PowerModels.parse_file("data/matpower/case5_dc.m")
